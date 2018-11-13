@@ -1,0 +1,2613 @@
+
+GitHub上最受欢迎的5大Java项目
+先别想着参与，先尝试看完一个开源项目的源代码，比如JUnit
+自己写一个小型的redis database好了
+http://blog.fourthbit.com/2015/04/12/building-a-distributed-fault-tolerant-key-value-store
+
+www.sogou.com/labs/dl/q.html （已经不在了）
+http://download.labs.sogou.com/dl/sogoulabdown/SogouQ/SogouQ2012.mini.tar.gz 
+动手实战操作搜狗日志文件
+日志下载地址 
+我们使用的是迷你版本的tar.gz格式的文件，其大小为87K 
+该文件的格式如下所示：
+
+访问时间\t加密的用户ID\t搜索关键词\t该URL的搜索结果排名\t该URL用户点击排序结果\t用户点击的URL
+——————————————————————————————————————HADOOP——————————————————————
+What is hadoop and it is architectura
+Architecturally, the reason you’re able to deal with lots of data is because Hadoop spreads it out.
+
+Hadoop is a framework that allows you to first store Big Data in a distributed environment, so that, you can process it parallely. There are basically two components in Hadoop:(HDFS + YARN)
+
+The first one is HDFS for storage (Hadoop distributed File System), that allows you to store data of various formats across a cluster. The second one is YARN, for resource management in Hadoop. It allows parallel processing over the data, i.e. stored across HDFS.
+
+Restart the Cloudera Manager Server:
+service cloudera-scm-server restart
+
+what spark library you have used?
+
+———————————————————————————————————
+Deal with skew data in HIVE
+1. check cluster problem (join another two large table to see) or key problem
+2. if key problem, find out which key is skewed
+3. following belows, create schema table using SKEWD BY (Key) ON (key_value)
+4. setting hive.optimize.skewjoin.compiletime = true.
+5. hive.optimize.skewjoin = true.
+(or if not important, join key NOT IN in the list of skewed key)
+
+Data Skew can be solved prior to execution via schema modification if the skew key is already known:
+
+During creation of the schema table in the Hive Metadata declare the skew key using  SKEWED BY (key) ON (key_value)
+Configure Hive to leverage a skew join by setting hive.optimize.skewjoin.compiletime = true.
+Data Skew can be solved during execution via a threshold resolved during runtime:
+
+Set the threshold - if any key breaks this threshold a skew join will be triggered - hive.skewjoin.key
+Configure Hive to consider a skew join during execution by setting hive.optimize.skewjoin = true.
+
+    /** A simple UDF to convert Celcius to Fahrenheit */
+    public class countDays extends UDF {
+    public double evaluate(double value) {
+    return (value - 32) / 1.8;
+  }
+} 
+
+
+
+How to use UDF?
+hive> add jar my-udf.jar
+hive> create temporary function fahrenheit_to_celcius using "com.mycompany.hive.udf.ConvertToCelcius";
+hive> SELECT fahrenheit_to_celcius(temp_fahrenheit) from temperature_data;
+
+How to submit hadoop jobs to client?
+Now we submit the WordCount job to the JobClient as shown below. Here I just added a custom split size while executing the job to make sure our job will run two map tasks in parallel, since we will get two splits for our input file, i.e., input file/custom split size.
+hadoop jar /opt/mapr/hadoop/hadoop-0.20.2/hadoop-0.20.2-dev-examples.jar wordcount -Dmapred.max.split.size=786432 /myvolume/in /myvolume/out >> /tmp/JobClient-WC-split1 2>&1
+
+performance tuning
+hive> set hive.execution.engine=tez;
+hive.limit.optimize.limit.file=10
+Enable Parallel Execution =>hive.exec.parallel = true;
+Enable Vectorization:
+By vectorized query execution, we can improve performance of operations like scans, aggregations, filters and joins, by performing them in batches of 1024 rows at once instead of single row each time.
+ 
+hive> set hive.vectorized.execution.enabled = true;
+hive> set hive.vectorized.execution.reduce.enabled = true;
+hive> set hive.vectorized.execution.reduce.groupby.enabled = true;
+
+We can also set the parallel reduce tasks to a fixed value with below property:
+hive> set mapred.reduce.tasks=32;
+
+hive —-version
+12. Use ORC File Format
+Using ORC (Optimized Record Columnar) file format we can improve the performance of Hive Queries very effectively. Below picture on file format best depicts the power of ORC file file over other formats.
+(585GB text -> 505GB RCF -> 221GB Parguet -> 131GB ORCfile)
+
+How to convert tables to ORC or create Table with ORC file format (STORED AS ORC)
+Create Tables with ORC File Format
+
+We can create new hive table with ORC file format with just by adding STORED AS ORC clause to CREATE TABLE command in hive. Optionally we can provide compression techniques in TBLPROPERTIES clause.
+
+Convert Existing Tables to ORC (oc)
+
+Create a table with the same schema as the source table and STORED AS ORC, then we can submit below command to copy data from regular old table new ORC formatted table.
+
+
+hive> CREATE TABLE EMP_ORC (id int, name string, age int, address string)
+    >  STORED AS ORC tblproperties (“orc.compress" = “SNAPPY");
+hive> INSERT OVERWRITE TABLE EMP_ORC SELECT * FROM EMP;
+
+when querying a table, a SerDe will deserialize a row of data from the bytes in the file to objects used internally by Hive to operate on that row of data. when performing an INSERT or CTAS (see “Importing Data” on page 441), the table’s SerDe will serialize Hive’s internal representation of a row of data into the bytes that are written to the output file.
+
+Yes, SerDe is a Library which is built-in to the Hadoop API
+Hive uses Files systems like HDFS or any other storage (FTP) to store data, data here is in the form of tables (which has rows and columns).
+SerDe - Serializer, Deserializer instructs hive on how to process a record (Row). Hive enables semi-structured (XML, Email, etc) or unstructured records (Audio, Video, etc) to be processed also. For Example If you have 1000 GB worth of RSS Feeds (RSS XMLs). You can ingest those to a location in HDFS. You would need to write a custom SerDe based on your XML structure so that Hive knows how to load XML files to Hive tables or other way around.
+(HDFS files --> InputFileFormat --> <key, value> --> Deserializer --> Row object
+Row object --> Serializer --> <key, value> --> OutputFileFormat --> HDFS files)
+
+如何读csv file to hive
+(file in hfs, hfs dfs -put file.cv folder)
+1. create external table
+2. load data as an external table hive>load data local inpath "/usr/local/haha.csv" into table csv1_table; 
+3. move the external table to an internal hive table, similar command, but with STORED AS ORC( Optimized Row Columnar)/Parquet(columnar format)
+
+Cloudera vs MapR vs Hortonworks?
+
+Cloudera Distribution for Hadoop (CDH，界面友好，还有impala,比mapR慢）
+
+CDH has a user friendly interface with many features and useful tools like Cloudera Impala
+
+CDH is comparatively slower than MapR Hadoop Distribution
+
+MapR (fastest hadoop distribution with multi node direct access,但interface console比cloudera差，为啥快？MapR Hadoop Distribution has a more distributed approach for storing metadata on the processing nodes because it depends on a different file system known as MapR File System (MapRFS) and does not have a NameNode architecture.）
+
+Hortonworks Data Platform (HDP) (唯一支持windows,但ambri管理界面简单，无rich features)
+
+
+Data Serialization
+Serialization plays an important role in the performance of any distributed application. Formats that are slow to serialize objects into, or consume a large number of bytes, will greatly slow down the computation. 
+
+Why Impala query speed is faster:
+
+Impala does not make use of Mapreduce as it contains its own pre-defined daemon process to run a job. It sits on top of only the HDFS as it uses the same to merely store the data. Therefore, we prefer calling it as simply “SQL on HDFS”
+However ,Hive functions on top of Hadoop which itself includes HDFS as well as MapReduce. Executing an Hive query would then, set forth a series of mapreduce commands until we arrive at the results.
+Since Impala doesn’t have to translate a SQL query into map/shuffle/reduce, While processing SQL-like queries;instead full SQL processing is done in memory (Hive write intermediate results on disk), It uses hdfs for its storage which is fast for large files; 3 reasons make it faster.
+(but disadvantages: Impala doesn't provide fault-tolerance compared to Hive, so if there is a problem during your query then it's gone. ?? how hive provide fault-tolerance)
+
+How many daemon processes run on a Hadoop cluster?
+
+Hadoop is comprised of five separate daemons. Each of these daemons runs in its own JVM.
+Following 3 Daemons run on Master nodes.
+
+NameNode - This daemon stores and maintains the metadata for HDFS.
+
+Secondary NameNode - Performs housekeeping functions for the NameNode.
+
+JobTracker - Manages MapReduce jobs, distributes individual tasks to machines running the Task Tracker. Following 2 Daemons run on each Slave nodes DataNode – Stores actual HDFS data blocks.
+
+TaskTracker – It is Responsible for instantiating and monitoring individual Map and Reduce tasks.
+
+
+Spark tunning:
+Data Serialization: Switch to Kyro Serializer with SparkConf, which is faster and is more compact.
+Garbage Collection:
+
+Memory Management
+Execution memory is used for computation (e.g., shuffles, joins, sorts, and agg).
+Storage memory is used for caching and propagating internal data.
+
+Set spark.memory.fraction to determine what fraction of the JVM heap space is used for Spark execution/storage memory. The default is 60%.
+It is recommended to have 2-3 tasks per CPU core in your cluster.
+
+Action/Transformation Selection and Optimization
+ 
+
+Minimize shuffles on join() by either broadcasting the smaller collection or by hash partitioning both RDDs by keys.
+Use narrow transformations instead of the wide ones as much as possible. In narrow transformations (e.g., map()and filter()), the data required to be processed resides on one partition, whereas in wide transformation (e.g, groupByKey(), reduceByKey(), and join()), the data to be processed resides on multiple partitions and so needs to be shuffled.
+Avoid using GroupByKey() for associative reductive operations. Always use the ReduceByKey() instead. With the ReduceByKey, Spark combines output with common keys on each partition before shuffling the data.
+
+Caching and Persisting
+By default, Spark caches data in MEMORY_ONLY, so if there is not enough memory, Spark will just drop the old RDD partitions and recalculate them if they are needed. Instead, use MEMORY_AND_DISK storage level 
+
+Caching vs Persisting in spark?
+persist both can temporary store results.
+val right ==xxx
+right.persist();
+right.filter();
+right.head();…
+
+With cache(), you use only the default storage level MEMORY_ONLY. With persist(), you can specify which storage level you want,(rdd-persistence).
+Spark gives 5 types of Storage level
+
+MEMORY_ONLY
+MEMORY_ONLY_SER
+MEMORY_AND_DISK
+MEMORY_AND_DISK_SER
+DISK_ONLY
+cache() will use MEMORY_ONLY. If you want to use something else, use persist(StorageLevel.<*type*>).
+
+By default persist() will store the data in the JVM heap as unserialized objects.
+
+? what is partition in spark?
+A partition (aka split) is a logical chunk of a large distributed data set.
+By default, a partition is created for each HDFS partition, which by default is 64MB 
+(Can define number of partitions)val ints = sc.parallelize(1 to 100, 4) 4 is number of partitions
+
+? what is partition vs repartition in spark?
+(partition - uncompressed file; repartition - compressed.file)
+what happened when textFile with 400 partitions:
+Preferred way to set up the number of partitions for an RDD is to directly pass it as the second input parameter in the call like rdd = sc.textFile("hdfs://…​/file.txt", 400), where 400 is the number of partitions. In this case, the partitioning makes for 400 splits that would be done by the Hadoop’s TextInputFormat, not Spark and it would work much faster. It’s also that the code spawns 400 concurrent tasks to try to load file.txt directly into 400 partitions. (It will only work as described for uncompressed files.)
+
+why use repartition when using compressed file sc.textFile('demo.gz’)?
+When using textFile with compressed files (file.txt.gz not file.txt or similar), Spark disables splitting that makes for an RDD with only 1 partition (as reads against gzipped files cannot be parallelized). In this case, to change the number of partitions you should do repartitioning. In such cases, it’s helpful to use sc.textFile('demo.gz') and do repartitioning using rdd.repartition(100) as follows:
+rdd = sc.textFile('demo.gz')
+rdd = rdd.repartition(100)
+
+If your nodes are configured to have 6g maximum for Spark (and are leaving a little for other processes), then use 6g rather than 4g, spark.executor.memory=6g. 
+
+Try using more partitions, you should have 2 - 4 per CPU. IME increasing the number of partitions is often the easiest way to make a program more stable (and often faster). For huge amounts of data you may need way more than 4 per CPU, I've had to use 8000 partitions in some cases!
+
+You should increase the driver memory. In your $SPARK_HOME/conf folder you should find the file spark-defaults.conf, edit and set the spark.driver.memory 4000m 
+
+Hive has a relational database on the master node it uses to keep track of state. For instance, when you CREATE TABLE FOO(foo string) LOCATION 'hdfs://tmp/';, this table schema is stored in the database.
+
+If you have a partitioned table, the partitions are stored in the database(this allows hive to use lists of partitions without going to the file-system and finding them, etc). These sorts of things are the 'metadata'.
+
+When you drop an internal table, it drops the data, and it also drops the metadata.
+
+When you drop an external table, it only drops the meta data. That means hive is ignorant of that data now. It does not touch the data itself.
+简单说就是一般的table, drop.然后查看hive/warehouse 可以看到
+
+——————————————————————————————————————HDFS——————————————————————
+1. What is HDFS?
+Hadoop Distributed file system or HDFS is a Java based distributed file system that allows us to store Big data across multiple nodes in a Hadoop cluster. So, if I install Hadoop, I will get HDFS as an underlying storage system for storing the huge data sets in the distributed environment.
+
+2. How to Add a new DataNode
+This recipe shows how to add new nodes to an existing HDFS cluster without restarting the whole cluster, and how to force HDFS to rebalance after the addition of new nodes.
+                                                                                                                                                                                                                                                                                                                                                                           
+Getting ready
+To get started, follow these steps:
+
+Install Hadoop on the new node and replicate the configuration files of your existing Hadoop cluster. You can use rsync to copy the Hadoop configuration from another node. For example:
+
+Copy
+>rsync -a <master_node_ip>:hadoop-1.0.x/conf $HADOOP_HOME/conf
+Ensure that the master node of your Hadoop/HDFS cluster can perform password-less SSH to the new node. Password-less SSH setup is optional, if you are not planning on using the bin/*.sh scripts from the master node to start/stop the cluster.
+
+How to do it...
+The following steps will show you how to add a new DataNode to an existing HDFS cluster:
+
+Add the IP or the DNS of the new node to the “$HADOOP_HOME/conf/slaves” file in the master node.
+
+Start the DataNode in the newly added slave node by using the following command.
+
+Copy
+>bin/hadoop-deamon.sh start datanode
+
+hadoop installation modes: Local, Pseudo distributed, Distributed
+
+The goal of YARN is to allow users to utilize multiple distributed application frameworks that provide such capabilities side by side sharing a single cluster and the HDFS filesystem.
+
+Hadoop MapReduce is a data processing framework that can be utilized to process massive amounts of data stored in HDFS. 
+
+MapReduce programming model consists of Map and Reduce functions.
+
+You can run Hadoop jobs through the {HADOOP_HOME}/bin/hadoop command,
+
+
+Mapper-The map function breaks each line into substrings using whitespace characters such as the separator, and for each token (word) emits (word,1) as the output.
+
+(就是每个单词都是一次，重复的也算1次)
+ public void map(Object key, Text value, Context context) throws
+    IOException, InterruptedException {
+      // Split the input text value to words
+      StringTokenizer itr = new StringTokenizer(value.toString());
+      // Iterate all the words in the input text value
+      while (itr.hasMoreTokens()) {
+        word.set(itr.nextToken());
+        context.write(word, new IntWritable(1));
+      }
+}
+
+
+-Combiner step: combiner, which performs local aggregation of the Map task output key-value pairs. 
+ we can optimize this scenario if we can sum all the instances of <word,1> pairs to a single <word, count> pair before sending all the data <word, 1> across the network to the Reducers.
+
+The goal of MapReduce is to be able to use efficiently a load of processing units working in parallels for some kind of algorithms.
+
+加这么一行：   job.setCombinerClass(IntSumReducer.class); 
+map output(foo, 1; arr, 1; foo, 1)
+combiner output(foo, 2; arr, 1)
+shuffle (不同的node)(foo<1,2>, car<1,1>) 
+Reduce output(car, 2; foo, 3)
+
+-Reduce: The reduce function outputs the key and the number of occurrences of the key as the output.
+
+public void reduce(Text key, Iterable<IntWritable>values, Context
+    context) throws IOException, InterruptedException
+    {
+      int sum = 0;
+      // Sum all the occurrences of the word (key)
+      for (IntWritableval : values) {
+        sum += val.get();
+      }
+      result.set(sum);
+      context.write(key, result);
+    }
+
+Configure the mr job and submits it to Hadoop YARN cluster
+The main driver program configures the MapReduce job and submits it to the Hadoop YARN cluster:
+    Configuration conf = new Configuration();
+    ......
+    // Create a new job
+    Job job = Job.getInstance(conf, "word count");
+    // Use the WordCount.class file to point to the job jar
+    job.setJarByClass(WordCount.class);
+    job.setMapperClass(TokenizerMapper.class);
+www.it-ebooks.info
+job.setReducerClass(IntSumReducer.class);
+   job.setOutputKeyClass(Text.class);
+   job.setOutputValueClass(IntWritable.class);
+   // Setting the input and output locations
+   FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+   FileOutputFormat.setOutputPath(job, newPath(otherArgs[1]));
+   // Submit the job and wait for it's completion
+   System.exit(job.waitForCompletion(true) ? 0 : 1);
+
+Compile the sample using the Gradle build or Apache Ant by “ant compile” command
+  $ $HADOOP_HOME/bin/hadoop jar \
+   hcb-c1-samples.jar \
+   chapter1.WordCount wc-input wc-output-directory
+
+  $ cat wc-output/part*
+
+2. Explain the HDFS Architecture and list the various HDFS daemons in HDFS cluster?
+While listing various HDFS daemons, you should also talk about their roles in brief. Here is how you should answer this question:
+
+Apache Hadoop HDFS Architecture follows a Master/Slave topology where a cluster comprises a single NameNode (Master node or daemon) and all the other nodes are DataNodes (Slave nodes or daemons).  Following daemon runs in HDFS cluster:
+
+NameNode: It is the master daemon that maintains and manages the data block present in the DataNodes. 
+DataNode: DataNodes are the slave nodes in HDFS. Unlike NameNode, DataNode is a commodity hardware, that is responsible of storing the data as blocks.
+Secondary NameNode: The Secondary NameNode works concurrently with the primary NameNode as a helper daemon. It performs checkpointing. 
+
+How to create a directory for storing HDFS data:
+{HADOOP_DATA_DIR}/data and {HADOOP_DATA_DIR}/name. Change the directory permissions to 755 by running the following command for each directory:
+    $ chmod –R 755 <HADOOP_DATA_DIR>
+
+How to calculate spark executor?
+https://stackoverflow.com/questions/37871194/how-to-tune-spark-executor-number-cores-and-executor-memory?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+Runthefollowingcommandtocopythe/test/README.txtfilebacktoalocal directory:
+    $ hdfs dfs –copyToLocal \
+    test/README.txt README-NEW.txt
+
+
+Chapter 2: Cloud Deployment (MR2, EC2, EMR, AWSCLI, VMs)
+
+（就主要看看如何做performance running的）
+
+HDFS-performance tuning
+3.Problem 1 – Massive I/O Caused by Large Input Data in Map Input Stage
+This problem happens most often on jobs with light computation and large volumes of source data. If disk I/O is not fast enough, computation resources will be idle and spend most of the job time waiting for the incoming data. Therefore, performance can be constrained by disk I/O.
+
+We can identify this issue with high values in below job counters.
+
+Job counters: Bytes Read, HDFS_BYTES_READ
+Solution 1: Compress Input Data
+
+————————————————————————————————————————————kafka———————————————————————————————————
+
+ Kafka, think of a topic as a category).Applications may connect to kafka system and transfer a message onto the topic. A message can include any kind of information. It could, for example, have information about an event that has happened on your website, or it could just be a simple text message that is supposed to trigger an event. Producers are processes that publish data (push messages) into Kafka topics within the broker.
+
+message: small piece of data, 比如each row of the text file 为一个message, 10行是message1 到message10
+
+
+A Topic is a category/feed name to which messages are stored and published.  all Kafka messages are organized into topics.
+
+topic might have huge contents that can be splited into different partitions and store one partition on one computer。多少partition由我们决定，不是由kafka决定，因为一个partition 占一个computer,不能再split，所以开始就要设置好。
+
+offset: is a sequence id given to messages as they arrive in a partition.
+所以要target global unique identifier of a message need : Topic name, partition number, offset
+
+Consumer group: A group o consumers acting as a single local unit.
+
+
+
+Multithread on consumer for multi partition topics: (API)
+ int threadCount = Integer.parseInt(args[1]);
+    MultiThreadHLConsumer simpleHLConsumer = new MultiThreadHLConsumer("localhost:2181", "testgroup", topic);
+    simpleHLConsumer.testConsumer(threadCount);
+
+You can run more than one Consumer in a JVM process by using threads.
+(From cloudera:)
+Consumer with many threads
+If processing a record takes a while, a single Consumer can run multiple threads to process records, but it is harder to manage offset for each Thread/Task. If one consumer runs multiple threads, then two messages on the same partitions could be processed by two different threads which make it hard to guarantee record delivery order without complex thread coordination. This setup might be appropriate if processing a single task takes a long time, but try to avoid it.
+
+Thread per consumer
+If you need to run multiple consumers, then run each consumer in their own thread. This way Kafka can deliver record batches to the consumer and the consumer does not have to worry about the offset ordering. A thread per consumer makes it easier to manage offsets. It is also simpler to manage failover (each process runs X num of consumer threads) as you can allow Kafka to do the brunt of the work.
+
+Consumer:   final Consumer<Long, String> consumer =
+                                  new KafkaConsumer<>(props);
+
+      // Subscribe to the topic.
+      consumer.subscribe(Collections.singletonList(TOPIC));
+      return consumer;
+
+Notice you use ConsumerRecords which is a group of records from a Kafka topic partition. The ConsumerRecords class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one ConsumerRecord list for every topic partition returned by a the consumer.poll().
+
+
+What will happen if the number of notifications produced by other applications, users…is increased fast and exceed the rate that can be processed by our module?
+There are 2 possible models I’d like to mention in this post.
+Multiple consumers with their own threads (Model #1)
+Single consumer, multiple worker processing threads (Model #2)
+
+————————————————————————————————————————HADOOP————————————————————————————————————————
+The Hadoop Framework works on:
+
+–Hadoop Distributed File System: HDFS is a Java-based storage unit in Hadoop,
+which offers reliable and scalable storage of large datasets. It is responsible for
+storing different types of data in the form of blocks.
+
+–Hadoop MapReduce: MapReduce is a Java-based programming paradigm that offers
+scalability across different Hadoop clusters. It is responsible for distributing
+the workload into different tasks to run in parallel. The job of ‘Map’ is to split
+the datasets into tuples or key-value pairs, and the ‘Reduce’ then takes the output
+from Map and combines it with data tuples into a smaller set of tuples.
+–Hadoop YARN: Yet Another Resource Negotiator is the architectural framework in Hadoop
+that allows multiple data processing engines to handle stored data in a single
+platform, disclosing a new completely method to analytics.
+
+
+HDFS follows master-slave architecture.(nameNode + dataNode)
+In HDFS, Namenode is the master node and Datanodes are the slaves. 
+Namenode contains the metadata about the data stored in Data nodes, also maintain and manager dataNodes, also receive heartbeat and block report from all dataNodes
+Data Nodes is for actual data.
+
+—How data stored in HDFS?
+2013-dec.long (513MB) -> a block (128M)  + b block (128M) + c block(128M) + d block(128M) + e block(1M)
+When you store a file in HDFS, the system split into evenly sized blocks (default: 128M) and stores these blocks in various slave nodes in the Hadoop cluster. This is an entirely normal thing to do, as all file systems break files down into blocks before storing them to disk.
+FileSystem under Linux is 4kb, blok in Hadoop is 128M. How to manage?
+In a file system under Linux is 4KB, whereas a typical block size in Hadoop is 128MB. This value is configurable, and it can be customized, as both a new system default and a custom value for individual files.
+
+—How Hadoop can store data at the petabyte scale?(metadata, parallelism, balanced size)
+First of all, every data block stored in HDFS has its own metadata and needs to be tracked by a central server. If the block size were in the kilobyte range, even modest volumes of data in the terabyte scale would overwhelm the metadata server with too many blocks to track.
+
+Parallelism is the key to Hadoop’s scalability on the data processing side. HDFS is designed to enable high throughput so that the parallel processing of these large data sets happens as quickly as possible. 
+To enable efficient processing, a balance needs to be struck. On one hand, the block size needs to be large enough to warrant the resources dedicated to an individual unit of data processing (for instance, a map or reduce task). On the other hand, the block size can’t be so large that the system is waiting a very long time for one last unit of data processing to finish its work.
+
+—What is edge node?
+Edge nodes are the interface between the Hadoop cluster and the outside network. For this reason, they’re sometimes referred to as gateway nodes. Most commonly, edge nodes are used to run client applications and cluster administration tools.
+
+They’re also often used as staging areas for data being transferred into the Hadoop cluster. As such, Oozie, Pig, Sqoop, and management tools such as Hue and Ambari run well there. 
+
+—What is node vs rack vs cluster?
+(cluster = a collection of racks, rack = 30-40 nodes)
+A Node is simply a computer. This is typically non-enterprise, commodity hardware for nodes that contain data. Storage of Nodes is called as rack. A rack is a collection of 30 or 40 nodes that are physically stored close together and are all connected to the same network switch. Network bandwidth between any two nodes in rack is greater than bandwidth between two nodes on different racks.
+A Hadoop Cluster is a collection of racks.  
+
+partition-bucket-in hive
+Hive organizes tables into partitions for grouping same type of data together based on a column or partition key. Each table in the hive can have one or more partition keys to identify a particular partition. Using partition we can make it faster to do queries on slices of the data
+
+bucket - join with same column will be much faster (since hash into same bucket)
+
+spark 1.6 vs spark2.2
+spark2.0 a new entry point (session) that replaces the old sparkContext
+The biggest change that I can see is that DataSet and DataFrame APIs will be merged in 2.x
+
+Spark session vs context?
+History:
+old spark, context was created and manipulated using context API’s. For every other API,we needed to use different contexts.For streaming, we needed StreamingContext, for SQL sqlContext and for hive HiveContext. But as DataSet and Dataframe API’s are becoming new standard API’s we need an entry point build for them. So in Spark 2.0, we have a new entry point for DataSet and Dataframe API’s called as Spark Session.
+
+SparkSession is essentially combination of SQLContext, HiveContext and future StreamingContext. All the API’s available on those contexts are available on spark session also. 
+
+
+Spark Context:
+Prior to Spark 2.0.0 sparkContext was used as a channel to access all spark functionality.
+SparkConf is required to create the spark context object, which stores configuration parameter like appName (to identify your spark driver), application, number of core and memory size of executor running on worker node. The spark driver program uses spark context to connect to the cluster through a resource manager (YARN orMesos..).
+Example:
+creating sparkConf :
+val conf = new SparkConf().setAppName(“RetailDataAnalysis”).setMaster(“spark://master:7077”).set(“spark.executor.memory”, “2g”)
+
+creation of sparkContext:
+val sc = new SparkContext(conf)
+
+SPARK 2.0.0 onwards, SparkSession provides a single point of entry to interact with underlying Spark functionality and allows programming Spark with DataFrame and Dataset APIs. All the functionality available with sparkContext are also available in sparkSession. Also, it provides APIs to work on DataFrames and Datasets.
+
+Example:
+
+Creating Spark session:
+val spark = SparkSession
+.builder
+.appName("WorldBankIndex")
+.getOrCreate()
+
+Configuring properties:
+spark.conf.set("spark.sql.shuffle.partitions", 6)
+spark.conf.set("spark.executor.memory", "2g")
+
+
+
+how to take care of skewed data in hive
+1. check cluster or key
+2. if key then skewed key on (key value) when creating table
+3. skewjoin.commpile.optimize = true; skew join.optimize = true
+(or regular join filter: NOT IN skewed key)
+
+YARN performs all your processing activities by allocating resources and scheduling tasks.
+It has two major components, i.e. ResourceManager and NodeManager.
+
+— When to use Hadoop ? 
+Search – Yahoo, Amazon, Zvents
+Log processing – Facebook, Yahoo
+Data Warehouse – Facebook, AOL
+Video and Image Analysis – New York Times, Eyealike
+
+Till now, we have seen how Hadoop has made Big Data handling possible. But there are some scenarios where Hadoop implementation is not recommended.
+
+— When not to use Hadoop ?
+Following are some of those scenarios :
+Low Latency data access : Quick access to small parts of data
+Multiple data modification : Hadoop is a better fit only if we are primarily concerned about reading data and not modifying data.
+Lots of small files : Hadoop is suitable for scenarios, where we have few but large files.
+
+After knowing the best suitable use-cases, let us move on and look at a case study where Hadoop has done wonders
+
+—————————————————————YARN—————————————————————
+ResourceManager - The ResourceManager is the YARN master process, and its sole function is to arbitrate resources on a Hadoop cluster. It responds to client requests to create containers
+
+NodeManager - The NodeManager is the slave process that runs on every node in a cluster. Its job is to create, monitor, and kill containers, create containers, and it reports on the status of the containers to the ResourceManager.
+
+ApplicationMaster - ApplicationMaster doesn’t perform any application-specific work. It is responsible for negotiating resource requirements ( for the resource manager )and working with NodeManagers to execute and monitor the tasks,(承上启下) is also responsible for the specific fault-tolerance behavior of the application
+
+Container - A container is an application-specific process that’s created by a NodeManager with a constrained set of resources (Memory, CPU, etc.)
+
+YARN child - Application Master dynamically launch YARN child to do the MapReduce tasks.
+
+To know more about HBase you can go through our HBase tutorial blog.
+
+————————————————————————————————MAPREDUCE————————————————————————————————
+The Hadoop Framework works on:
+
+–Hadoop Distributed File System: HDFS is a Java-based storage unit in Hadoop,
+which offers reliable and scalable storage of large datasets. It is responsible for
+storing different types of data in the form of blocks.
+–Hadoop MapReduce: MapReduce is a Java-based programming paradigm that offers
+scalability across different Hadoop clusters. It is responsible for distributing
+the workload into different tasks to run in parallel. The job of ‘Map’ is to split
+the datasets into tuples or key-value pairs, and the ‘Reduce’ then takes the output
+from Map and combines it with data tuples into a smaller set of tuples.
+–Hadoop YARN: Yet Another Resource Negotiator is the architectural framework in Hadoop
+that allows multiple data processing engines to handle stored data in a single
+platform, disclosing a new completely method to analytics.
+
+MapReduce is a software framework that enables developers to write programs that can process massive amounts of unstructured data in parallel across a distributed group of processors.
+
+RDD is a read-only, partitioned collection of records. RDDs can be created through deterministic operations on either data on stable storage or other RDDs. RDD is a fault-tolerant collection of elements that can be operated on in parallel.
+
+sparkConf is required to create the spark context object, which stores configuration parameter like appName (to identify your spark driver), application, number of core and memory size of executor running on worker node.
+
+val conf = new SparkConf().setAppName(“RetailDataAnalysis”).setMaster(“spark://master:7077”).set(“spark.executor.memory”, “2g”)
+val sc = new SparkContext(conf)
+
+SparkSession provides a single point of entry to interact with underlying Spark functionality and
+allows programming Spark with DataFrame and Dataset APIs.
+
+
+————————————————————BIG DATA————————————————————
+
+Building a data lake technology stack includes data storage, ingestion, processing, operations, governance, security and data analytics
+
+HDFS: For on-prem data lakes, HDFS remains the storage of choice, as it provides distributed data with replication. This allows for faster processing of big data use cases. HDFS also allows enterprises to create storage tiers for data lifecycle management, leveraging those tiers to save on cost, while maintaining data retention policies and regulatory requirements.
+Cloud storage: Cloud-based storage offers a unique advantage as it allows for the decoupling of storage and compute, enabling enterprises to cut storage costs and leverage different compute powers to meet specific use case demands. Cloud storage also allows for creating tiered storage to optimize cost and for data retention and regulatory requirements.
+
+Data lakes are defined as a repository containing vast amounts of raw data, in native formats, while allowing different users to access and analyse that data as required. 
+
+While other data storage solutions turn data into structured information, data lakes do not need to do this. It stores data in both structured and unstructured formats. By storing unstructured data, the data lake can be used in different ways and it is not limited to providing set data, data groups, or formatted information. In fact, a data lake is open to anyone and each individual user can simply take the data they need.
+
+$sqoop list-tables --connect “jdbc:mysql://quckstart.cloudera:3306/retail_db” --username retail_dba  --password cloudera  (没有sqoop list-all-tables)
+
+$sqoop eval --connect “jdbc:mysql://quickstart.cloudera:3306/retail_db” --username retail_dba --password cloudera \
+> --query “select * from departments”
+
+
+
+(-m 12应该是map成 12份，可以改成8份，开始map reducing)
+$sqoop import-all-tables \
+  -m 12 \
+  --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+  --username=retail_dba \
+  --password=cloudera \
+  --as-avrodatafile \    --as-textfile \
+  --target-dir=/user/cloudera/sqoop_merge/departments_delta \
+  --warehouse-dir=/user/cloudera/sqoop_import     --where "department_id >= 9000"
+
+sqoop export --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+  --username retail_dba \
+  --password cloudera \
+  --table departments \
+  --export-dir /user/cloudera/sqoop_import/departments_export \
+  --batch \
+  --outdir java_files \
+  -m 1 \
+  --update-key department_id \
+  --update-mode allowinsert
+
+
+$sqoop import-all-tables \
+  --num-mappers 1 \
+  --connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+  --username=retail_dba \
+  --password=cloudera \
+  --hive-import \
+  --hive-overwrite \
+  --create-hive-table \
+  --hive-databases sqoop_import
+
+Avro是个支持多语言的数据序列化框架，支持c，c++，c＃，Python，java，php，ruby，java。
+他的诞生主要是为了弥补Writable只支持java语言的缺陷
+Avro的schema是JSON格式的
+hadoop head/tail to check data content
+
+create HIVE table:
+scala> sqlContext.sql("CREATE TABLE sample_07 (code string,description string,total_emp int,salary int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TextFile")
+Load data from HDFS into the table:
+scala> sqlContext.sql("LOAD DATA INPATH '/user/hdfs/sample_07.csv' OVERWRITE INTO TABLE sample_07")
+Create a DataFrame containing the contents of the sample_07 table:
+scala> val df = sqlContext.sql("SELECT * from sample_07")
+ Show all rows with salary greater than 150,000:
+scala> df.filter(df("salary") > 150000).show()
+
+
+hive(hdp2.5, ORCFile)
+Impala(CDH5.8, Parquet/Snappy)
+
+As for Hive, Hortonworks still considers it the de facto engine for petabyte scale queries and extraction load transformation (ELT) workloads.
+
+
+The perfect candidate has Linux/Unix, Shell Scripting, Hadoop, and Podium experience. 
+Podium is a tool used in the Hadoop environment, but it’s a “nice to have” skill set. 
+Develop code and unit test to ensure it meets business needs as well as quality standards
+Develop and define application scope and objectives, including impact to interfaces
+Hands-on experience in application development leveraging Java/Hive/Impala/Spark/Sqoop/Hadoop technologies
+
+Difference with Caching and Persistence
+Caching or persistence are optimisation techniques for (iterative and interactive) Spark computations. They help saving interim partial results so they can be reused in subsequent stages. These interim results as RDDs are thus kept in memory (default) or more solid storages like disk and/or replicated.
+
+What’s partition in spark?
+What’s standard partition vs dynamic partition?
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+How to write cvs to rdd?
+We can use the new DataFrameRDD for reading and writing the CSV data. There are few advantages of DataFrameRDD over NormalRDD:
+
+Difference between dataset and data frame?
+Dataframe Limitations:Compile-time type safety: As discussed, Dataframe API does not support compile time safety which limits you from manipulating data when the structure is not know.
+Example:
+
+case class Person(name : String , age : Int) 
+val dataframe = sqlContext.read.json("people.json") 
+dataframe.filter("salary > 10000").show 
+=> throws Exception : cannot resolve 'salary' given input age , name
+This is challenging specially when you are working with several transformation and aggregation steps.
+
+Cannot operate on domain Object (lost domain object): Once you have transformed a domain object into dataframe, you cannot regenerate it from it. In the following example, once we have create personDF from personRDD, we won’t be recover the original RDD of Person class (RDD[Person]).
+Example:
+
+case class Person(name : String , age : Int)
+val personRDD = sc.makeRDD(Seq(Person("A",10),Person("B",20)))
+val personDF = sqlContext.createDataframe(personRDD)
+personDF.rdd // returns RDD[Row] , does not returns RDD[Person]
+
+Dataset features:
+1. Type Safety: Datasets API provides compile time safety which was not available in Dataframes. In the example below, we can see how Dataset can operate on domain objects with compile lambda functions.
+2. Provides best of both RDD and Dataframe: RDD(functional programming, type safe), DataFrame (relational model, Query optimazation , Tungsten execution, sorting and shuffling)
+3. Encoders: With the use of Encoders, it is easy to convert any JVM object into a Dataset, allowing users to work with both structured and unstructured data unlike Dataframe.
+4. Programming Languages supported: Datasets API is currently only available in Scala and Java. Python and R are currently not supported in version 1.6. Python support is slated for version 2.0.
+
+How to link your java/scala to hortonworks
+jar dependency -> textFile(“hdfs://tmp/wordcount.txt”) -> maven package -> jar传给sandbox
+Copy the assembly over to the sandbox:
+scp -P 2222 ./target/SparkTutorial-1.0-SNAPSHOT.jar root@sandbox-hdp.hortonworks.com:/root
+
+Open a second terminal window and ssh into the sandbox:
+ssh -p 2222 root@sandbox-hdp.hortonworks.com
+
+Use spark-submit to run our code. We need to specify the main class, the jar to run, and the run mode (local or cluster):
+spark-submit --class "Hortonworks.SparkTutorial.Main" --master local ./SparkTutorial-1.0-SNAPSHOT.jar
+
+
+run spark-scala app on cloudera sandbox
+add scala-tool maven2 repository, include spark and scala dependencies
+run “mvn package” to generate jar file
+
+spark-submit --class com.cloudera.sparkwordcount.SparkWordCount --master local \
+  target/sparkwordcount-0.0.1-SNAPSHOT.jar
+<input file> 2
+
+
+
+—————————————————SPARK admin—————————————————
+You can run Spark applications locally or distributed across a cluster, either by using an “interactive shell” or by “submitting an application”.
+
+To run applications distributed across a cluster, Spark requires a cluster manager. Cloudera supports two cluster managers: YARN and Spark Standalone. When run on YARN, Spark application processes are managed by the YARN ResourceManager and NodeManager roles. When run on Spark Standalone, Spark application processes are managed by Spark Master and Worker roles.
+
+In Cloudera Manager 5.2 and higher, the service that runs a Spark Standalone cluster has been renamed Spark (Standalone), and the Spark service runs Spark as a YARN application with only gateway roles. Both services have a Spark History Server role.
+
+You can install, add, and start Spark through the Cloudera Manager Installation wizard using parcels. (Minimum Required Role: Full Administrator)
+
+Spark RDD APIs – An RDD stands for Resilient Distributed Datasets. It is Read-only partition collection of records. RDD is the fundamental data structure of Spark. It allows a programmer to perform in-memory computations on large clusters in a fault-tolerant manner. Thus, speed up the task. Follow this link to learn Spark RDD in great detail.
+Spark Dataframe APIs – Unlike an RDD, data organized into named columns. For example a table in a relational database. It is an immutable distributed collection of data. DataFrame in Spark allows developers to impose a structure onto a distributed collection of data, allowing higher-level abstraction. Follow this link to learn Spark DataFrame in detail.
+Spark Dataset APIs – Datasets in Apache Spark are an extension of DataFrame API which provides type-safe, object-oriented programming interface. Dataset takes advantage of Spark’s Catalyst optimizer by exposing expressions and data fields to a query planner.
+
+
+1. STATIC PARTITION: User himself mentioning the segregation unit, either via using values of any one columns of the file to be loaded or creating virtual column(not part of the file) with values.
+
+1. Create Table:
+
+                         CREATE EXTERNAL TABLE sp_ratings ( 
+                                           userid INT, 
+                                           movieid INT, 
+                                           tstamp BIGINT 
+                          ) PARTITIONED BY (rating INT)
+                            ROW FORMAT DELIMITED 
+                            FIELDS TERMINATED BY '#'
+                            STORED AS TEXTFILE; 
+
+
+2. DYNAMIC PARTITION: User is just mentioning the column, on which partition is required.
+REST is taken care by hive itself. It will create segregation units based on the distinct column values.
+dynamic.partition.mode=nonstrict?
+dynamic.partition = true;
+
+DYNAMIC PARTITIONING:
+
+1. Create Table:
+
+                         CREATE EXTERNAL TABLE dp_ratings ( 
+                                           userid INT, 
+                                           movieid INT, 
+                                           tstamp BIGINT 
+                          ) PARTITIONED BY (rating INT)
+                            ROW FORMAT DELIMITED 
+                            FIELDS TERMINATED BY '#'
+                            STORED AS TEXTFILE; 
+
+
+difference between combiner vs reducer?
+
+A Combiner in Hadoop is a mini reducer that performs the local reduce task. Many MapReduce jobs are limited by the network bandwidth available on the cluster, so the combiner minimizes the data transferred between map and reduce tasks. Combiner function will run on the Map output and combiner's output is given to Reducers as input. In one word Combiner function is used for network optimization.
+
+RDDs can be cached using cache operation. They can also be persisted using persist operation.
+
+
+1. spark-enrichment
+RDD: Spark revolves around the concept of a resilient distributed dataset (RDD), which is a fault-tolerant collection of elements that can be operated on in parallel. There are two ways to create RDDs: parallelizing an existing collection in your driver program, or referencing a dataset in an external storage system, such as a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat.
+
+————————————————————————————————————————————————————————————————————————————————————————-
+————————————————————————————————————————————————————————————————————————————————————————-
+Apache Camel ™ is a versatile open-source integration framework based on known Enterprise Integration Patterns.
+—————————————————————————————————
+microservice architecture is a method of developing software applications as a suite of independently deployable, small, modular services in which each service runs a unique process and communicates through a well-defined, lightweight mechanism to serve a business goal.
+How the services communicate with each other depends on your application’s requirements, but many developers use HTTP/REST with JSON
+
+Sounds like SOA? Service-Oriented Architecture (SOA) The typical SOA model, for example, usually has more dependent ESBs, with microservices using faster messaging mechanisms.  SOA also focuses on imperative programming, whereas microservices architecture focuses on a responsive-actor programming style.  Moreover, SOA models tend to have an outsized relational database, while microservices frequently use NoSQL or micro-SQL databases (which can be connected to conventional databases). 
+
+its opposite: the monolithic architectural style.
+
+——————————————————————————————————————————
+function programming vs OOP
+Functional programming is a declarative paradigm because it relies on expressions and declarations rather than statements. 
+Object-oriented programming, or OOP, which takes advantage of application states and methods. These days, OOP is much more widespread than FP.
+
+——————————————————————————————— BasicJava———————————————————————————————
+Object Oriented Programming
+This is the most well known paradigm. As the name suggests, at the center of it all is an object. Objects contain both data and the functionality that operates on that data. The best was to describe this is to use the car analogy.
+
+Abstraction:
+https://www.youtube.com/watch?v=mf0jQijo9C4
+(abstract 可以包含deposit/withdraw functionality + abstract int calculateInterest function,这样在subclass extends abstract class里面就可以access deposit/withdrow methods，但Calculateinterest可以自己定义,然后abstract class还可以自由定义priate int amount = 30000, 但interface里面很少定义，定义也是final; interface可以multiple inheritance,abstract则不可以；但问题是如果我想再添加一个新methods，比如savingAccount，interface里面添加了，则所有相关的class都要添加这个新功能的Implementation,很多。。如果在abstract class里面就好多了，只要添加public void savingAccount(){} 但留着空，然后再各个subclass里面，看谁需要，就copy一份改写，不用每个subclass都加这个功能)
+如果换成interface, 则 全部是
+public abstract void deposite();
+public abstract void withdraw();
+public abstract void calculateInterest();
+就算不加public或者abstract，void deposite，还是默认public abstract的
+（所以在implements里面，3个methods implement 全部要写override，不写就报错）
+
+An abstract class is a class that is declared abstract—it may or may not include abstract methods. Abstract classes cannot be instantiated, but they can be subclassed.
+
+An abstract method is a method that is declared without an implementation (without braces, and followed by a semicolon), like this:
+
+abstract void moveTo(double deltaX, double deltaY);
+If a class includes abstract methods, then the class itself must be declared abstract, as in:
+
+public abstract class GraphicObject {
+   // declare fields
+   // declare nonabstract methods
+   abstract void draw();
+How to solve deadlock?
+
+when deadlock happened?
+
+stack vs queue
+A queue is sometimes referred to as a First-In-First-Out (FIFO)
+STACK is a LIFO (last in, first out) list
+
+k-means cluster
+
+mock object - 
+Mocking and Mock Objects is not specific to Java. Mock objects is a unit testing technique in which a code chunk is replaced by dummy implementations that emulate real code. This helps one to write unit tests targeting the functionality provided by the class under test.
+
+
+}
+When an abstract class is subclassed, the subclass usually provides implementations for all of the abstract methods in its parent class. However, if it does not, then the subclass must also be declared abstract.
+
+
+(Oracle example: An interface is a group of related methods with empty bodies NOT PROVIDE ANY implementation details
+. s. A bicycle's behavior, if specified as an interface, 
+interface Bicycle {
+
+    //  wheel revolutions per minute
+    void changeCadence(int newValue);
+    void changeGear(int newValue);
+    void speedUp(int increment);
+    void applyBrakes(int decrement);
+}
+
+class ACMEBicycle implements Bicycle {
+
+    int cadence = 0;
+    int speed = 0;
+    int gear = 1;
+)
+
+Encapsulation:
+ Make the instance variables private AND Getter/Setter)
+Encapsulation simply means binding object state(fields) and behaviour(methods) together. 
+Once you have broken the car down to it’s parts. You have to think about the characteristics of those parts. For example: the radius and width and the usage of a tire. In the same sense, you’re gonna build your car by putting all the pieces together: object composition. Encapsulation is basically the grouping of data and functionality to operate on that data. This makes your code more modular.
+
+Inheritance:
+interface is only contract - there is no implementation
+In the Java language, classes can be derived from other classes, thereby inheriting fields and methods from those classes.
+Definitions: A class that is derived from another class is called a subclass (also a derived class, extended class, or child class). The class from which the subclass is derived is called a superclass (also a base class or a parent class).
+
+
+Java doesn’t allow multiple inheritance. In this article, we will discuss why java doesn’t allow multiple inheritance and how we can use interfaces instead of classes to achieve the same purpose.
+diamond problem that occurs in multiple inheritance.
+(Class D extends both classes B & C. Now lets assume we have a method in class A and class B & C overrides that method in their own way. Wait!! here the problem comes – Because D is extending both B & C so if D wants to use the same method which method would be called (the overridden method of B or the overridden method of C). Ambiguity. That’s the main reason why Java doesn’t support multiple inheritance.)
+
+Can we implement more than one interfaces in a class?
+Yes, we can implement more than one interfaces in our program because that doesn’t cause any ambiguity(see the explanation below).
+
+interface X
+{
+   public void myMethod();
+}
+interface Y
+{
+   public void myMethod();
+}
+class JavaExample implements X, Y
+{
+   public void myMethod()
+   {
+
+Polymorphism:
+Q1) What is polymorphism?
+Ans) The ability to identify a function to run is called Polymorphism. In java, c++ there are two types of polymorphism: compile time polymorphism (overloading) and runtime polymorphism (overriding)
+
+Method overriding: Overriding occurs when a class method in a child class has the same name and signature as a method in the parent class. When you override methods, JVM determines the proper method to call at the program’s run time, not at the compile time.
+
+Overloading: Overloading is determined at the compile time. It occurs when several methods have same names with:
+
+Different method signature and different number or type of parameters.
+Same method signature but the different number of parameters.
+Same method signature and same number of parameters but of different type
+
+difference between treemap and hashmap vs LinkedHashMap vs HashtABLE
+The key in treemap is sorted
+(HashMap is implemented as a hash table, and there is no ordering on keys or values. TreeMap is implemented based on red-black tree structure, and it is ordered by the key.)
+
+LinkedHashMap preserves the insertion order. Hashtable is synchronized, in contrast to HashMap.
+
+difference between hashtable, hashmap and concurrent hashmap in java: concurrent hash map does not lock read. 
+
+Difference between HashTable vs HashMap?
+Hashtable is synchronized, whereas hashMap is not.
+Hashtable does not allow null keys or values. HashMap allows one null key and any number of null values.
+One of HashMaps subclasses is LinkedHashMap, so in the event that you want to predictable iteration order (which is insertion order by default), you could easily swap out the HashMap for a LinkedHashMap.
+This wouldn’t be as easy if you were using hashtable.
+ConcurrentHashMap - thread safe check-then-act semantics such as: ConcurrentMap.putIfAbsent(key, value);
+
+wrapper class  vs java objects  ? memory management
+
+multithread concept and ATM questions, producer/consumer questions
+
+How does a HashMap find an entry? 
+
+HashSet, TreeSet
+
+protected  vs private vs  public or default modifiers?
+
+a) private : private fields or methods or constructors are visible within the class in which they are defined.
+
+b) protected : Protected members of a class are visible within the package but they can be inherited to sub classes outside the package.
+
+c) public : public members are visible everywhere.
+
+d) default or No-access modifiers : Members of a class which are defined with no access modifiers are visible within the package in which they are defined.
+
+3) What are non-access modifiers in java.?
+These are 4 modifiers which are used to achieve other functionalities like,
+
+a) static : This modifier is used to specify whether a member is a class member or an instance member.
+b) final : It is used to restrict the further modification of a class or a method or a field. (for more on final, click here).
+c) abstract : abstract class or abstract method must be enhanced or modified further.
+d) synchronized : It is used to achieve thread safeness. Only one thread can execute a method or a block which is declared as synchronized at any given time. (for more on synchronized, click here.)
+
+What is the runtime of that search of a hashMap?
+HashMap operation is dependent factor of hashCode implementation. For the ideal scenario lets say the good hash implementation which provide unique hash code for every object (No hash collision) then the best, worst and average case scenario would be O(1).
+
+why hashcode use 31?
+1. voice 1: 
+The value 31 was chosen because it is an odd prime. If it were even and the multiplication overflowed, information would be lost, as multiplication by 2 is equivalent to shifting. The advantage of using a prime is less clear, but it is traditional. A nice property of 31 is that the multiplication can be replaced by a shift and a subtraction for better performance: 31 * i == (i << 5) - i. Modern VMs do this sort of optimization automatically.
+2. voice 2: 31 was chosen because it gave the best distribution
+
+How does HashMap work?
+key transformed into buckets using HashCode -> hash value is used to calculate bucket; 
+bucket: One bucket is associated with a linkedList of node.
+The entries contains key and value and also the reference of next nodes
+
+How is HashMap constructed by default?
+Default value of DEFAULT_INITAIL_CAPACITY is 16 in HashMap number of buckets, as a power of 2.
+Default value of load factor is (.75)
+(if exceeded -> hash table of buckets is increased x2 and all buckets refreshed)
+
+What is Hash Function?
+HashCode() function which returns an integer value, used by Hashmap to find a correct bucket.
+
+What is Hashmap bucket?
+-Uses simple linked list to store objects
+-can have multiple key-value pairs: Map.Entry = (hash, key, value, NextNodeReference)
+key -> hashing algorithm -> Hash value (address of bucket)
+
+How does HashMap get(Key k) method works?
+-Checks whether key is null or not (only 1 null key possible)
+-Calls hashCode method on the key object
+-applies returned hashValue to its own static hash function
+(it defends against poor quality hash functions. to find a bucket location(backing array)
+-if in a single bucket 2 entries has same hash Value - then uses key.equals()
+
+How does put(k,v) work?
+By definition, the “put” replaces the previous value associated with the given key in the map 
+(conceptually like an array indexing operation for primitive types)
+
+What are java8 improvements to hash map?
+If in a bucket, too many unequals keys have same hashcode(>8), the implementation of this bucket is switched from linked list to balanced tree.
+
+What is hatched collision?
+Two equal objects produce same hash code.
+
+
+why throwing and handilng exception are too expensive operations in terms of performance and should be avoided (as well as finally blocks mentioned above)?
+The slow part about exceptions is building the stack trace (in the constructor of java.lang.Throwable), which depends on stack depth. Throwing in itself is not slow.
+
+If you need exceptions for control flow (not recommended), and profiling shows that exceptions are the bottleneck, then create an Exception subclass that overrides fillInStackTrace() with an empty implementation. Alternatively (or additionally) instantiate only one exception, store it in a field and always throw the same instance.
+
+The following demonstrates exceptions without stack traces by adding one simple method to the micro benchmark (albeit flawed) in the accepted answer:
+
+public class DidNotWorkException extends Exception {
+  public Throwable fillInStackTrace() {
+      return this;
+  }
+}
+
+
+
+Exception Cost: When to throw and when not to？
+This means throwing exceptions on things like invalid arguments to an API is probably just fine, but on the other hand throwing an exception due to invalid user input, or badly formatted text from an external system, could be a bad idea.  Significant use of exceptions in business logic validation is more often a bad idea
+
+
+Subclasses of a class can define their own unique behaviors and yet share some of the same functionality of the parent class.
+you just can’t override a constructor from another class.
+
+Interface vs abstract class?
+Java interfaces are used to decouple the interface of some component from the implementation. In other words, to make the classes using the interface independent of the classes implementing the interface. Thus, you can exchange the implementation of the interface, without having to change the class using the interface.
+
+Abstract classes are typically used as base classes for extension by subclasses. Some programming languages use abstract classes to achieve polymorphism, and to separate interface from implementation, but in Java you use interfaces for that. Remember, a Java class can only have 1 superclass, but it can implement multiple interfaces. 
+
+
+abstract 比interface速度要快
+接口是稍微有点慢的，因为它需要时间去寻找在类中实现的方法。
+记住抽象方法是小儿子，从小吃的好所以跑的快，接口是私生子，从小日子苦，营养不良。
+
+如果你往抽象类中添加新的方法，你可以给它提供默认的实现。因此你不需要改变你现在的代码。 如果你往接口中添加方法，那么你必须改变实现该接口的类。
+抽象类可以有一些非抽象方法的存在，这些方法被称为默认实现。如果添加一个默认实现方法（不能是抽象方法），就不需要在子类中去实现，所以继承这个抽象类的子类无须改动。
+
+但是，接口中只能添加抽象方法，当你添加了抽象方法，实现该接口的类就必须实现这个新添加的方法。因为，定义中说的很清楚，接口的实现必须实现所有的方法。所有，当然包括新添加的方法。
+
+
+
+
+Smoke Testing: 测试新特性有关的所有方面 (广度) ，但不深入，用以判断我们是否需要执行进一步的测试
+Sanity Testing: 测试新特性的有限正常功能，深入测试
+Regression testing: 回归新特性所有相关功能，避免引入代码变更存在问题以及引入新问题，深入全面
+如果我们拿一条河流来比喻，比如1000英尺宽，在水里含有杂质（可以比作软件中的bug），
+
+那么这三种类型的测试可以被看作如下：
+
+对于Smoke Testing: 为了找到河面所有的杂质，但不包括水面以下的
+
+对于Sanity Testing: 为了找到某个特定范围内所有的杂质（比如200英尺半径内)，这不包含所有表面的杂质，但包含了那个范围内水面下直到水底的杂质
+
+对于Regression Testing: 为了这片水域所有的杂质，表面的以及水面以下的
+
+Smoke Testing	Sanity Testing	Regression Testing
+
+Smoke testing is executed to determine if critical functionalities of AUT are working fine
+(关键功能测试)
+
+Sanity testing is executed to determine if the section of AUT is still working as design after some minor changes or bug fixes	 (就是bug fixed后的测试)
+
+Regression testing is executed to confirm whether a recent program or code change has not adversely affected existing features 
+
+———————————————————————————————————————
+A part-of-speech tagger, or POS-tagger, processes a sequence of words:
+    Here we see that and is CC, a coordinating conjunction; now and completely are RB, or adverbs; for is IN, a preposition; something is NN, a noun; and different is JJ, an adjective.
+
+Do techniques like stemming and lowercasing (vocabulary) help for text classification? YES
+Good feature engineering can often markedly improve the performance of a text classifier. It is especially beneficial in some of the most important applications of text classification, like spam
+stop word removal, a variety of feature engineering functions (tf-idf, n-grams, 
+ Spelling Correction 
+—————————————————————
+How to secure Hadoop
+Kerberos- HIVE/HDFS
+组成：KDC: Key Distribution Center (has db to store user encryped info
+还有Ticket Granting Server, if want to accessing any service on a hadoop cluster, you need to get a service ticket from TGS)
+KAS (Kerberos Authentication Server): grands access
+HOW:
+want to list a directory from HDFS on a kerberos enabled Hadoop Cluster, first, must authenticated by kerberos. The linux Kinit tool will ask you password. Then send auth request to KAS, it will send TGT in your credential cache, 然后输入命令比如hadoop fs -ls， Hadoop client 会用TGT and reach out to TGS, and ask a ticket for the name node service
+
+
+Kerberos Configuration Files
+
+2a. krb5.conf (krb5.ini) file - From your Kerberos admin or other knowledgeable resource, obtain a krb5.conf file. On Windows, the file may be called krb5.ini.
+
+2b. The keytab file - If you're authenticating to Kerberos via a keytab, you'll need to obtain a keytab file (usually generated by a Kerberos admin or other knowledgeable resource), and the user principal associated with the keytab.
+A keytab (short for “key table”) stores long-term keys for one or more principals. Keytab
+
+———————————————————————————————
+I know there are three different, popular types of non-sql databases.
+
+Key/Value: Redis, Tokyo Cabinet, Memcached
+ColumnFamily: Cassandra, HBase
+Document: MongoDB, CouchDB
+
+Document databases pair each key with a complex data structure known as a document. Documents can contain many different key-value pairs, or key-array pairs, or even nested documents.
+
+Key-value databases and document databases are quite similar.Key-value stores are the simplest NoSQL databases,
+
+Document databases such as MongoDB and Couchbase extend the concept of the key-value database. In fact, document databases maintain sets of key-value pairs within a document. The JSON example shown earlier is also a document. 
+
+Redis also offers more advanced data structures like lists, sorted sets, hashes, strings, sets, bitmaps, and more.
+Redis命令：> SET Wilmington 19802
+> GET Wilmington
+“19802”
+>LPUSH 可以输入list...
+Regis is an in-memory database, faster then Mongoldb, but not scale as well as mongodb
+redis是目前公认的速度最快的基于内存的键值对数据库，但redis的缺点也非常明显，仅提供最基本的hash set, list, sorted set等基于数据类型，不分表，没有schema，没有索引，没有外键，缺少int/date等基本数据类型，建议老老实实用 mysql，前边加 redis 缓存
+
+我第一次使用Redis是在一家公司里面，这家公司需要对一个客户联系方式数据库进行搜索。搜索需要查找姓名、电子邮件地址、所在地和电话号码。这个系统是用SQL数据库编写的，在60 000个客户中进行查找匹配的一系列查询需要花费10~15秒的时间。在花了一周时间学习Redis的基础知识之后，我使用Redis构建了一个搜索引擎，能够对所有那些字段甚至更多字段进行过滤和排序，并且在50毫秒内返回响应。经过短短几个星期的努力测试，就使这个系统达到了生产级别，性能比原来的系统提高了200倍。阅读本书可以让你学到很多小技巧、小窍门以及一些众所周知的Redis曾经成功解决过的问题。
+http://redisinaction.com/preview/chapter1.html
+
+
+—————写一个mapper reducer的java程序
+
+
+MongoDB uses JSON-like documents to store schema-free data. 
+
+
+Cleaning data： missing/malicious data/ erroneous data/Irrelevant data/incosistent data -比如address, 有没有country,zipcode/formatting data 比如date, son有-有的没有
+
+normalize data: age range from 0-100, income range from 0-bill (based on currency)
+Some models: different attributes are on different scales
+Bias in the attributes can also be a problems (data-skewed, need to normalize to some range )
+Some data have yes/no that need to be converted to 1 or 0
+Outlier:in collaborative filtering, a single user who rates thousands of movies could have huge effect on everyone else’s rating. (Web log have malicious traffic - go find with standard deviation to classify the outliers)
+———————————————————————————————————————
+
+I don't see a long-term future for Hive on Tez, because Impala and Presto are better for those normal BI queries, and Spark generally performs better for analytics queries (that is, for finding smaller haystacks inside of huge haystacks)
+
+Impala  X	
+Description	Analytic DBMS for Hadoop	
+Spark SQL is a component on top of 'Spark Core' for structured data processing
+
+Apache Spark is a fast and general engine for big data processing, with built-in modules for streaming, SQL, machine learning and graph processing.
+Impala is an open-source massively parallel processing (MPP) SQL query engine for data stored in a computer cluster running Apache Hadoop.
+
+Fault Tolerance
+Spark can run both short and long-running queries and recover from mid-query faults, while Impala is more focussed on the short queries and is not fault-tolerant.
+
+(spark streaming - failure tolerance)
+Spark streaming recovery of a lost node’s state.
+– When a node fails, each node in the cluster works to
+recompute part of the lost node’s RDDs, resulting in
+significantly faster recovery than upstream backup
+without the cost of replication.
+• In a similar way, D-Streams can recover from
+stragglers using speculative execution
+• Checkpoint state RDDs periodically
+
+Hive support
+Apache Spark supports Hive UDFs (user-defined functions). However, Impala, because of it uses a custom C++ runtime, does not support Hive UDFs.
+
+No. Apache Spark is a fast and general engine for big data processing, with built-in modules for streaming, SQL, machine learning and graph processing.
+
+Impala - open source, distributed SQL query engine for Apache Hadoop.
+
+
+———————————————————————HIVE———————————————————————
+Apache Hive is an open source data warehouse system used for querying and analyzing large datasets. Data in Apache Hive can be categorized into Table, Partition, and Bucket. The table in Hive is logically made up of the data being stored. It is of two type such as internal table and external table. Refer this guide to learn what is Internal table and External Tables and the difference between both. Let us now discuss the Partitioning and Bucketing in Hive in detail-
+
+Partitioning – Apache Hive organizes tables into partitions for grouping same type of data together based on a column or partition key. Each table in the hive can have one or more partition keys to identify a particular partition. Using partition we can make it faster to do queries on slices of the data.
+
+Bucketing – In Hive Tables or partition are subdivided into buckets based on the hash function on a column in the table to give extra structure to the data that may be used for more efficient queries.
+
+
+spark will not replace hive or impala?
+“NO”. Because all three have their own use cases and benefits , also ease of implementation these query engines depends on your hadoop cluster setup.
+(如何选择：sparksql is fault tolerant , impala know for low latency. 
+use impala for exploratory analytics on large data sets . 
+impala is not fault tolerant meaning if the query runining on that machine goes down the query has to be re-run. however in our enviroment large cluster  we hardly have this issue .’
+
+Low latency describes a computer network that is optimized to process a very high volume of data messages with minimal delay (latency). 
+LATENCY: an amount of time to get the response [us]
+
+s3 is an object store, not a file sytem strictly
+(hybrid approach: S3-very large data sets/ infrequently used data)
+hdfs: fast processing, frequently accessed data, medium -long term cluster
+或者从s3 pull some data close to christmas-to hdfs for data scientist team for short term analysis/ ad-hoc analysis
+—————————————————————————————
+HADOOP Interview questions:
+Apache Hadoop is a framework which provides us various services or tools to store and process Big Data.
+
+Now, while explaining Hadoop, you should also explain the main components of Hadoop, i.e.:
+
+Storage unit– HDFS (NameNode, DataNode)
+Processing framework– YARN (ResourceManager, NodeManager)
+
+3. What are HDFS and YARN?
+HDFS (Hadoop Distributed File System) is the storage unit of Hadoop. It is responsible for storing different kinds of data as blocks in a distributed environment. It follows master and slave topology.
+
+♣ Tip: It is recommended to explain the HDFS components too i.e.
+
+NameNode: NameNode is the master node in the distributed environment and it maintains the metadata information for the blocks of data stored in HDFS like block location, replication factors etc.
+DataNode: DataNodes are the slave nodes, which are responsible for storing data in the HDFS. 
+An typical HDFS cluster has many DataNodes.
+
+NameNode manages all the DataNodes.
+YARN (Yet Another Resource Negotiator) is the processing framework in Hadoop, which manages resources and provides an execution environment to the processes.
+
+♣ Tip: Similarly, as we did in HDFS, we should also explain the two components of YARN:   
+
+ResourceManager: It receives the processing requests, and then passes the parts of requests to corresponding NodeManagers accordingly, where the actual processing takes place. It allocates resources to applications based on the needs.
+NodeManager: NodeManager is installed on every DataNode and it is responsible for execution of the task on every single DataNode.
+
+
+4. Tell me about the various Hadoop daemons and their roles in a Hadoop cluster.
+Generally approach this question by first explaining the HDFS daemons i.e. NameNode, DataNode and Secondary NameNode, and then moving on to the YARN daemons i.e. ResorceManager and NodeManager, and lastly explaining the JobHistoryServer.
+
+NameNode: It is the master node which is responsible for storing the metadata of all the files and directories. It has information about blocks, that make a file, and where those blocks are located in the cluster.
+Datanode: It is the slave node that contains the actual data.
+Secondary NameNode: It periodically merges the changes (edit log) with the FsImage (Filesystem Image), present in the NameNode. It stores the modified FsImage into persistent storage, which can be used in case of failure of NameNode.
+ResourceManager: It is the central authority that manages resources and schedule applications running on top of YARN.
+NodeManager: It runs on slave machines, and is responsible for launching the application’s containers (where applications execute their part), monitoring their resource usage (CPU, memory, disk, network) and reporting these to the ResourceManager.
+JobHistoryServer: It maintains information about MapReduce jobs after the Application Master terminates.
+
+RDBMS vs. Hadoop
+RDBMS	Hadoop
+Data Types	RDBMS relies on the structured data and the schema of the data is always known.	Any kind of data can be stored into Hadoop i.e. Be it structured, unstructured or semi-structured.
+
+
+                             Hadoop 1.x vs.                                Hadoop 2.x
+                                 Hadoop 1.x	                           Hadoop 2.x
+Passive  NameNode	NameNode is a Single Point of Failure	Active & Passive NameNode
+Processing	MRV1 (Job Tracker & Task Tracker)	MRV2/YARN (ResourceManager & NodeManager)
+
+11. How does NameNode tackle DataNode failures?
+NameNode periodically receives a Heartbeat (signal) from each of the DataNode in the cluster, which implies DataNode is functioning properly.
+
+A block report contains a list of all the blocks on a DataNode. If a DataNode fails to send a heartbeat message, after a specific period of time it is marked dead.
+
+The NameNode replicates the blocks of dead node to another DataNode using the replicas created earlier.
+
+
+How do you define “block” in HDFS? What is the default block size in Hadoop 1 and in Hadoop 2? Can it be changed? 
+Blocks are the nothing but the smallest continuous location on your hard drive where data is stored. HDFS stores each as blocks, and distribute it across the Hadoop cluster. Files in HDFS are broken down into block-sized chunks, which are stored as independent units.
+
+Hadoop 1 default block size: 64 MB
+Hadoop 2 default block size:  128 MB
+Yes, blocks can be configured. 
+
+Name the three modes in which Hadoop can run.Standalone (local) mode: Pseudo distributed mode: Fully distributed mode: 
+
+32. What is a “Combiner”? 
+A “Combiner” is a mini “reducer” that performs the local “reduce” task. It receives the input from the “mapper” on a particular “node” and sends the output to the “reducer”. “Combiners” help in enhancing the efficiency of “MapReduce” by reducing the quantum of data that is required to be sent to the “reducers”.
+
+38. What is “SerDe” in “Hive”?
+Apache Hive is a data warehouse system built on top of Hadoop and is used for analyzing structured and semi-structured data developed by Facebook. 
+
+The “SerDe” interface allows you to instruct “Hive” about how a record should be processed. A “SerDe” is a combination of a “Serializer” and a “Deserializer”. “Hive” uses “SerDe” (and “FileFormat”) to read and write the table’s row.
+SerDe 是Serializer 和Deserializer 的简称。它是Hive用来处理记录并且将它们映射到Hive 表中的字段数据类型
+它的第一列是id,第二列是name，第一列和第二列间通过不固定长度的空白(如空格 制表符等)分割；
+我们希望创建一个user表，能够识别f1.txt ，通过创建表时执行分隔符的方法就不行了，这就需要用到hive的序列化(SerDe)了。
+
+The Deserializer interface takes a string or binary representation of a record, and translates it into a Java object that Hive can manipulate. The Serializer, however, will take a Java object that Hive has been working with, and turn it into something that Hive can write to HDFS or another supported system.
+
+———————————————————————————
+41. What is Apache HBase?
+HBase is an open source, multidimensional, distributed, scalable and a NoSQL database written in Java. HBase runs on top of HDFS (Hadoop Distributed File System) and provides BigTable (Google) like capabilities to Hadoop. It is designed to provide a fault tolerant way of storing large collection of sparse data sets. HBase achieves high throughput and low latency by providing faster Read/Write Access on huge data sets.
+
+Yes, SerDe is a Library which is built-in to the Hadoop API
+Hive uses Files systems like HDFS or any other storage (FTP) to store data, data here is in the form of tables (which has rows and columns).
+SerDe - Serializer, Deserializer instructs hive on how to process a record (Row). Hive enables semi-structured (XML, Email, etc) or unstructured records (Audio, Video, etc) to be processed also. For Example If you have 1000 GB worth of RSS Feeds (RSS XMLs). You can ingest those to a location in HDFS. You would need to write a custom SerDe based on your XML structure so that Hive knows how to load XML files to Hive tables or other way around.
+
+Hive has a relational database on the master node it uses to keep track of state. For instance, when you CREATE TABLE FOO(foo string) LOCATION 'hdfs://tmp/';, this table schema is stored in the database.
+
+If you have a partitioned table, the partitions are stored in the database(this allows hive to use lists of partitions without going to the file-system and finding them, etc). These sorts of things are the 'metadata'.
+
+In conclusion, Managed (internal) tables are like normal database table in which we can store data and query on. On dropping Managed tables, the data stored in them is also deleted and data is lost forever. While dropping External tables will delete metadata but not the data.
+
+
+Managed table - Data is temporary or deleting after using
+External table - data is also used outside of Hive
+
+
+42. What are the components of Apache HBase?
+HBase has three major components, i.e. HMaster Server, HBase RegionServer and Zookeeper.
+
+Region Server: A table can be divided into several regions. A group of regions is served to the clients by a Region Server.
+HMaster: It coordinates and manages the Region Server (similar as NameNode manages DataNode in HDFS).
+ZooKeeper: Zookeeper acts like as a coordinator inside HBase distributed environment. It helps in maintaining server state inside the cluster by communicating through sessions.
+To know more, you can go through this HBase architecture blog.
+
+Hive vs Hbase
+
+cannot use update or delete in HIVE
+Good news,Insert updates and deletes are now possible on Hive/Impala using Kudu.
+
+You need to use IMPALA/kudu to maintain the tables and perform insert/update/delete records. Details with examples can be found here: insert-update-delete-on-hadoop
+
+
+43. What are the components of Region Server?
+The components of a Region Server are:
+
+WAL: Write Ahead Log (WAL) is a file attached to every Region Server inside the distributed environment. The WAL stores the new data that hasn’t been persisted or committed to the permanent storage.
+Block Cache: Block Cache resides in the top of Region Server. It stores the frequently read data in the memory.
+MemStore: It is the write cache. It stores all the incoming data before committing it to the disk or permanent memory. There is one MemStore for each column family in a region.
+HFile: HFile is stored in HDFS. It stores the actual cells on the disk.
+44. Explain “WAL” in HBase?
+Write Ahead Log (WAL) is a file attached to every Region Server inside the distributed environment. The WAL stores the new data that hasn’t been persisted or committed to the permanent storage. It is used in case of failure to recover the data sets.
+
+What’s rowdy and hot spotting?
+Rows in HBase are sorted lexicographically by row key. This design optimizes for scans, allowing you to store related rows, or rows that will be read together, near each other. However, poorly designed row keys are a common source of hotspotting. Hotspotting occurs when a large amount of client traffic is directed at one node, or only a few nodes, of a cluster. 
+how to solve hotspoting: 
+1. Salting. (Salting in this sense has nothing to do with cryptography), but refers to adding random prefix to the start of a row key.  (foo001, foo002, foo003 -> a-foo001, b-foo002, c-foo003)
+2. Hashing: a given row to always be "salted" with the same prefix, in a way that would spread the load across the regionservers, but allow for predictability during reads.
+3. reverse the Key
+
+without primary key how to load table from mysql to hive
+kafka connect  avro/confluent 
+why using avro file? 
+
+Write a program that prints the numbers from 1 to 100. But for multiples of three print “Fizz” instead of the number and for the multiples of five print “Buzz”. For numbers which are multiples of both three and five print “FizzBuzz”.
+using scala
+
+}
+
+hello...user! this file is created to check the operations of spark.
+?, and how can we apply functions on that RDD partitions?. All this will be done through spark programming which is done with the help of scala language support…
+
+val rdd = paralized("hello...user! this file is created to check the operations of spark.
+?, and how can we apply functions on that RDD partitions?. All this will be done through spark programming which is done with the help of scala language support…")
+
+
+——————————————————————————SCALA—————————————————
+What is recursion tail in scala?
+Since recursion has stack overflow problem, 所以换成tail recursion:
+No operation or data saved when call returns
+比如： def sum(num: Int, res: Int): Int = {
+		if (num == 1) res;
+		else sum(num - 1, res + num)
+	}
+Tail recursion solves this problem. In tail recursive methods, all the computations are done before the recursive call, and the last statement is the recursive call.
+doesn't require pushing a new frame on the stack for every recursive call:
+
+In Scala, Primary Constructor is a constructor which is defined with class definition itself. Each class must have one Primary Constructor: 
+
+auxiliary constructors (就是construtor用不同的parameters, 并且用的“this” keyword: def this(xx)….)
+You can define multiple auxiliary constructors, but they must have different signatures (parameter lists).
+// primary constructor
+class Pizza (var crustSize: Int, var crustType: String) {
+
+  // one-arg auxiliary constructor
+  def this(crustSize: Int) {
+    this(crustSize, Pizza.DEFAULT_CRUST_TYPE)
+  }
+
+  // one-arg auxiliary constructor
+  def this(crustType: String) {
+    this(Pizza.DEFAULT_CRUST_SIZE, crustType)
+  }
+
+Differences between Array and ArrayBuffer in Scala:
+
+Array is fixed size array. We cannot change its size once its created.
+ArrayBuffer is variable size array. It can increase or decrease it’s size dynamically.
+Array is something similar to Java’s primitive arrays.
+ArrayBuffer is something similar to Java’s ArrayList.
+
+What is the difference between an object and a class?
+Objects
+An object is a type of class that can have no more than one instance, known in object-oriented design as a singleton. Instead of creating an instance with a new keyword, just access the object directly by name. 
+An object is a class that has exactly one instance.c reate singleton using the keyword “object” instead of class keyword. (in java, A class is a user defined blueprint or prototype from which objects are created. )
+
+Null– Its a Trait. 
+Nothing is a Trait. Its a subtype of everything. But not superclass of anything. There are no instances of Nothing.
+
+null– Its an instance of Null- Similar to Java null.
+
+Nil– Represents an emptry List of anything of zero length. Its not that it refers to nothing but it refers to List which has no contents.
+
+
+
+None– Used to represent a sensible return value. Just to avoid null pointer exception. Option has exactly 2 subclasses- Some and None. None signifies no result from the method.
+
+Unit– Type of method that doesn’t return a value of anys sort.
+
+
+
+1) What is a Scala Map?
+Scala Map is a collection of key value pairs. Values in a Scala Map are not unique but the keys are unique. Scala supports two kinds of maps- mutable and immutable. 
+
+2) mutable vs immutable
+Mutable object – You can change the states and fields after the object is created. For examples: StringBuilder, java.util.Date and etc.
+Immutable object – You cannot change anything after the object is created. For examples: String, 
+
+3)What is the advantage of companion objects in Scala?
+Classes in Scala programming language do not have static methods or variables but rather they have what is known as a Singleton object or Companion object. The companion objects in turn are compiled to classes which have static methods.
+
+4)Singleton object, Companion object and Companion Class
+Object myprint {private var m:int = 876}  access就是my print.main - single use class
+
+5)如何comiple scala:
+$ fsc myhello.scala
+$ scala myhello
+
+6) case class vs case object:
+Case class is a class which is defined with “case class” keywords. Case object is an object which is defined with “case object” keywords. Because of this “case” keyword, 
+
+7) What is the difference between Case Object and Object(Normal Object)?
+Normal object is created using “object” keyword. By default, It’s a singleton object.
+object MyNormalObject
+Case Object is created using “case object” keywords.By default, It’s also a singleton object
+case object MyCaseObject
+By Default, Case Object gets toString and hashCode methods. But normal object cannot.
+By Default, Case Object is Serializable. But normal object is not.
+
+8) How to tell case object is serializable?
+How do you prove that by default, Case Object is Serializable and Normal Object is not?
+Yes, By Default, Case Object is Serializable. But normal object is not. We can prove this by using isInstanaceOf method as shown below:
+scala> case object MyCaseObject
+defined object MyCaseObject
+
+scala> MyCaseObject.isInstanceOf[Serializable]
+res1: Boolean = true
+
+scala> object MyNormalObject
+defined object MyNormalObject
+
+scala> MyNormalObject.isInstanceOf[Serializable]
+res0: Boolean = false
+
+9)Difference between Array and List in Scala?
+Arrays are always Mutable where as List is always Immutable.
+Once created, We can change Array values where as we cannot change List Object.
+Arrays are fixed-size data structures where as List is variable-sized data structures. List’s size is automatically increased or decreased based on it’s operations we perform on it.
+Arrays are Invariants where as Lists are Covariants.
+
+10)val vs lazy val
+hungry evaluation
+lazy evalution,就是lazy的不会Init()，而是等到后面要call这个，才执行
+一般val，就是如果init()，就马上初始化生成各种值
+The difference between “val” and “lazy val” is that “val” is used to define variables which are evaluated eagerly and “lazy val” is also used to define variables but they are evaluated lazily.
+
+11）equal and == in scala/java:
+What is the Relationship between equals method and == in Scala? Differentiate Scala’s == and Java’s == Operator?
+In Scala, we do NOT need to call equals() method to compare two instances or objects. When we compare two instances with ==, Scala calls that object’s equals() method automatically.
+
+Java’s == operator is used to check References Equality that is whether two references are pointing to the same object or not. Scala’s == is used to check Instances Equality that is whether two instances are equal or not.
+
+12) Diamond problem:
+What is Diamond Problem? How Scala solves Diamond Problem?
+A Diamond Problem is a Multiple Inheritance problem. Some people calls this problem as Deadly Diamond Problem.
+
+In Scala, it occurs when a Class extends more than one Traits which have same method definition as shown below
+ Those rules are called “Class Linearization”.
+
+	class D extends B with C{ }
+	object ScalaDiamonProblemTest extends App {
+    		val d = new D
+    		d display
+	}
+Here output is “From C.display” form trait C. Scala Compiler reads “extends B with C” from right to left and takes “display” method definition from lest most trait that is C.
+
+13) Singleton objects
+How to create Singleton objects in Scala?
+the singleton pattern is a software design pattern that restricts the instantiation of a class to unique object. 
+In Scala, object keyword is used the following purposes:
+
+It is used to create singleton object in Scala.
+object MySingletonObject
+
+14)What is the difference between apply and unapply methods in Scala?
+apply method: To compose or assemble an object from it’s components.
+unapply method: To decompose or dis-assemble an object into it’s components.
+scala> Array(1,2,3)
+或者 scala> Array.apply(1,2,3)
+e singleton pattern is a software design pattern that restricts the instantiation of a class to one object.
+
+treat your object like a function, apply is the method that is called, so, Scala turns:obj(a, b, c) to obj.apply(a, b, c).
+
+unapply method: To decompose or dis-assemble an object into it’s components.
+
+	class Person(val firstName: String, val lastName: String)
+
+	object Person{
+  		def apply(firstName: String, lastName: String) 
+        		= new Person(firstName, lastName)
+
+    		def unapply(p: Person): (String,String) 
+        		= (p.firstName, p.lastName)
+	}
+
+
+
+15)Object in java/scala
+What is object in Scala? Is it a singleton object or instance of a class?
+Unlike Java, Scala has two meanings about ‘object’. In Java, we have only one meaning for object that is “An instance of a class”.
+
+Like Java, the first meaning of object is “An instance of a class”.
+val p1 = new Person("Scala","Java")
+or 
+val p1 = Person("Scala","Java")
+Second meaning is that object is a keyword in Scala. It is used to define Scala Executable programs, Companion Objects, Singleton Objects etc.
+
+16)Companion Object:
+When we create a Class by using Scala “class” keyword and Object by using Scala “object” keyword with same name and within the same source file, then that class is known as “Companion Class” and that object is known as “Companion Object”.
+
+Example:-Employee.scala
+
+class Employee{ }
+object Employee{ }
+
+In Scala, The main purpose of Companion Object is to define apply methods and avoid using new keyword in creating an instance of that Companion class object.
+
+
+
+17)How to create a Range in Scala?  1 to 10 (1,xxx, 10)   1 until 10 (1, xxxx, 9)
+
+18) pure function?
+A pure function is a function without any observable side-effects. like 10 + 20
+
+19)What is the difference between a function and a procedure?
+Both are used to perform computation. A function is a computation unit without side-effect where as a Procedure is also a computation unit with side-effects.
+
+20)What is the difference between a call-by-value and call-by-name parameter?
+The difference between a call-by-value and a call-by-name parameter, is that the former is computed before calling the function, and the later is evaluated when accessed.
+
+ def callByValue(x : Unit) = {
+    for (i <- 0 until 5) {
+      print(x)
+    }
+  }
+  
+  def callByName(x : => Unit) = {
+    for (i <- 0 until 5) {
+      print(x)
+    }
+  }
+ANS:
+  def main(args: Array[String]) {
+    var i = 0   
+    callByValue(i = i + 1)  
+    print(i)  // "1"
+  }
+
+def main(args: Array[String]) {
+    var i = 0
+    callByName(i = i + 1)
+    print(i)  // "5"
+  }
+
+a parameter is call-by-name, the value of the parameter is evaluated every time it's referenced in the method.It's being referenced 5 times, so the expression i = i + 1 is being executed 5 times.
+
+Call-by-value: before the control flow is passed to the callByValue method. 
+
+21) Define uses for the Option : Like scala, was not expecting that there could be no value, and get a NullPointerException. Using the Option, the developer always knows in which cases it may have to deal with the absence of value.
+
+var vs val vs def
+var: variable, mutable;
+val: value, immutable;
+def: creates a method
+
+trait vs abstract
+class can only extend one other class, but an more number of traits
+trait can only support type parameters, class can have constructor parameters
+
+How do I append to the list?
+In scala to append into a list, use “:+” single value
+var myList = List.empty[String]
+ 
+       myList :+= "a"
+ 
+       myList :+= "b"
+ 
+       myList :+= "c"
+ 
+       use++ for appending a list
+ 
+       var myList = List.empty[String]
+ 
+       myList ++= List("a", "b", "c")
+
+What is a closure in Scala?
+
+A closure is a function whose return value depends on the value of the variables declared outside the function.
+
+11)   What is Case Classes?
+
+Case classes provides a recursive decomposition mechanism via pattern matching, it is a regular classes which export their constructor parameter. The constructor parameters of case classes can be accessed directly and are treated as public values.
+
+12)   What is the use of tuples in scala?
+Scala tuples combine a fixed number of items together so that they can be passed around as whole. A tuple is immutable and can hold objects with different types, unlike an array or list.
+
+9)      What is ‘scala trait’ in scala?
+You can use a Scala trait just like a Java interface.
+Scala Trait(特征) 相当于 Java 的接口，实际上它比接口还功能强大。
+与接口不同的是，它还可以定义属性和方法的实现。
+When extending a class and one or more traits, use extends for the class, and with for subsequent traits:
+class Foo extends BaseClass with Trait1 with Trait2 { ...
+If a class extends a class (or abstract class) and a trait, always use extends before the class name, and use with before the trait name(s).
+
+‘Traits’ are used to define object types specified by the signature of the supported methods.  Scala allows to be partially implemented but traits may not have constructor parameters.  A trait consists of method and field definition, by mixing them into classes it can be reused.
+
+Unit?
+Unit is a type which represents the absence of value, just like java void
+
+Yield?
+yield generates a value to be kept in each iteration of loop
+
+————————————————————————————MULTITHREAD————————————————————————————
+
+2) What is thread?
+A thread is a lightweight subprocess.It is a separate path of execution.
+
+3) What is difference between wait() and sleep() method?
+1) The wait() method is defined in Object class.	The sleep() method is defined in Thread class.
+2) wait() method releases the lock.	The sleep() method doesn't releases the lock.
+
+4) Can we call the run() method instead of start()?
+yes, but it will not work as a thread rather it will work as a normal object so there will not be context-switching between the threads.
+
+5) What about the daemon threads?
+The daemon threads are basically the low priority threads that provides the background support to the user threads. It provides services to the user threads.
+
+6) What is synchronization?
+Synchronization is the capabilility of control the access of multiple threads to any shared resource. It is used:
+
+To prevent thread interference.
+To prevent consistency problem.
+
+7)What is deadlock?
+Deadlock is a situation when two threads are waiting on each other to release a resource. Each thread waiting for a resource which is held by the other waiting thread.
+
+8) 1) You have thread T1, T2, and T3, how will you ensure that thread T2 run after T1 and thread T3 run after T2?  use join() methods
+
+9）
+CountDownLatch：一个或者多个线程，等待其他多个线程完成某件事情之后才能执行；
+CountDownLatch使用案例
+需求：解析一个文件下多个txt文件数据，可以考虑使用多线程并行解析以提高解析效率。每一个线程解析一个文件里的数据，等到所有数据解析完毕之后再进行其他操作。
+
+CyclicBarrier：多个线程互相等待，直到到达同一个同步点，再继续一起执行。多线程计算数据，merge计算结果。
+对于CountDownLatch来说，重点是“一个线程（多个线程）等待”，而其他的N个线程在完成“某件事情”之后，可以终止，也可以等待。而对于CyclicBarrier，重点是多个线程，在任意一个线程没有完成，所有的线程都必须等待。
+
+CountDownLatch是计数器，线程完成一个记录一个，只不过计数不是递增而是递减，而CyclicBarrier更像是一个阀门，需要所有线程都到达，阀门才能打开，然后继续执行。
+8)  What is the difference between CyclicBarrier and CountDownLatch in Java?  (answer)
+Though both CyclicBarrier and CountDownLatch wait for number of threads on one or more events, the main difference between them is that you can not re-use CountDownLatch once count reaches to zero, but you can reuse same CyclicBarrier even after barrier is broken.
+
+Read more: http://javarevisited.blogspot.com/2014/07/top-50-java-multithreading-interview-questions-answers.html#ixzz5BY66f9VB
+
+10) yield() vs join() vs sleep()
+yield(): Suppose there are three threads t1, t2, and t3. Thread t1 gets the processor and starts its execution and thread t2 and t3 are in Ready/Runnable state. Completion time for thread t1 is 5 hour and completion time for t2 is 5 minutes. Since t1 will complete its execution after 5 hours, t2 has to wait for 5 hours to just finish 5 minutes job. In such scenarios where one thread is taking too much time to complete its execution, we need a way to prevent execution of a thread in between if something important is pending. yeild() helps us in doing so.
+yield() basically means that the thread is not doing anything particularly important and if any other threads or processes need to be run, they should run. Otherwise, the current thread will continue to run.
+
+it gives hint to the thread scheduler that it is ready to pause its execution. Thread scheduler is free to ignore this hint.
+If any thread executes yield method , thread scheduler checks if there is any thread with same or high priority than this thread. If processor finds any thread with higher or same priority then it will move the current thread to Ready/Runnable state 
+
+join(): The join() method of a Thread instance is used to join the start of a thread’s execution to end of other thread’s execution such that a thread does not start running until another thread ends. If join() is called on a Thread instance, the currently running thread will block until the Thread instance has finished executing.
+
+sleep(): This method causes the currently executing thread to sleep for the specified number of milliseconds, subject to the precision and accuracy of system timers and schedulers.
+
+2)  What is the difference between Thread and Process in Java? (answer)
+The thread is a subset of Process, in other words, one process can contain multiple threads.
+
+3)  How do you implement Thread in Java? (answer)
+Read more: http://javarevisited.blogspot.com/2014/07/top-50-java-multithreading-interview-questions-answers.html#ixzz5BY5WafiY
+there are two ways to implement Thread in Java. An instance of java.lang.Thread represent a thread but it needs a task to execute, which is an instance of interface java.lang.Runnable. Since Thread class itself implement Runnable
+
+4)  When to use Runnable vs Thread in Java? (answer)
+This is a follow-up of previous multi-threading interview question. As we know we can implement thread either by extending Thread class or implementing Runnable interface. Explain based on interface or thread
+
+5)  volatile or AtomicXXX variables or Lock API; try not to share data over multiple threads.
+if cannot avoid share data, use granular synchronized blocks or locks. Avoid nested locks
+
+ volatile keyword guarantees visibility of changes to variables across threads.
+volatile field becomes visible to all readers (other threads in particular) after a write operation completes on it. Without volatile, readers could see some non-updated value.
+Volatile修饰的成员变量在每次被线程访问时，都强迫从共享内存中重读该成员变量的值。而且，当成员变量发生变化时，强迫线程将变化值回写到共享内存。
+
+
+6)What is atomic operation? What are atomic classes in Java Concurrency API?
+Atomic operations are performed in a single unit of task without interference from other operations. Atomic operations are necessity in multi-threaded environment to avoid data inconsistency.
+
+Java并发编程：Callable、Future和FutureTask
+
+Callable interface in concurrency package that is similar to Runnable interface but it can return any Object and able to throw Exception. (callable就是比runnable好是因为能return object,还能抛错误)
+
+　　在前面的文章中我们讲述了创建线程的2种方式，一种是直接继承Thread，另外一种就是实现Runnable接口。
+　　这2种方式都有一个缺陷就是：在执行完任务之后无法获取执行结果。
+
+Future就是对于具体的Runnable或者Callable任务的执行结果进行
+　　1）判断任务是否完成；
+　　2）能够中断任务；
+　　3）能够获取任务执行结果。
+
+必要时可以通过get方法获取执行结果（但future是Interface, 所以用future task来解决）
+
+用volatile修饰的变量，线程在每次使用变量的时候，都会读取变量修改后的最的值。volatile很容易被误用，用来进行原子性操作。
+
+11) What is thread-safety? is Vector a thread-safe class? (Yes, see details)
+Thread-safety is a property of an object or code which guarantees that if executed or used by multiple threads in any manner e.g. read vs write it will behave as expected. For example, a thread-safe counter object will not miss any count if same instance of that counter is shared among multiple threads.
+
+Vector is indeed a thread-safe class and it achieves thread-safety by synchronizing methods which modify state of Vector, on the other hand, its counterpart ArrayList is not thread-safe.
+
+12）a race condition occurs due to race between multiple threads, if a thread which is supposed to execute first lost the race and executed second, behaviour of code changes, which surface as non-deterministic bugs. This is one of the hardest bugs to find and re-produce because of random nature of racing between threads. One example of race condition is out-of-order processing, 
+race condition有先检查后执行(check-then-act), 读取修改写入(read-modify-write)等。
+
+
+13）以下是implicit的一个小例子。
+
+比如以下一个例子，定义一个Int类型的变量num，但是赋值给了一个Double类型的数值。这时候就会编译错误：
+
+val num: Int = 3.5 // Compile Error
+但是我们加了一个隐式转换之后，就没问题了:
+
+implicit def double2Int(d: Double) = d.toInt
+
+val num: Int = 3.5 // 3， 这段代码会被编译成 val num: Int = double2Int(3.5)
+(Marking Rule)
+implicit可以修饰class，method，变量，object。
+
+14) how to throw exception 
+
+15)
+Atomicity
+MongoDB provides only a document-wide transaction: writes are never partially applied to an inserted or updated document. The operation is atomic in the sense that it either fails or succeeds, for the document in its entirety.
+
+Thus at least Mongo it's not as low-level as using a bunch of files, since the equivalent would be a set of files each with its own lock.
+
+There is no possibility of atomic changes that span multiple documents or collections: either you model the state changes of your application as additional documents, or you can't use Mongo where these database transactions are required. A classic example is to model the operations of a bank account with movement documents, instead of with a single account one: the insertion of a movement either succeed or fails.
+
+If you would have to implement 2 phase commit by yourself, just stick to a relational database for that persistence component of your application (I'm not saying anything on the rest of the data.)
+
+———————————————————————spark-submit—————
+Launching Applications with spark-submit
+Once a user application is bundled, it can be launched using the bin/spark-submit script. This script takes care of setting up the classpath with Spark and its dependencies, and can support different cluster managers and deploy modes that Spark supports:
+
+# Run a Python application on a Spark standalone cluster
+./bin/spark-submit \
+  --master spark://207.184.161.138:7077 \
+  examples/src/main/python/pi.py \
+  1000
+
+
+./bin/spark-submit \
+  --class <main-class> \
+  --master <master-url> \
+  --deploy-mode <deploy-mode> \  (cluster) or locally (default: client)
+  --conf <key>=<value> \
+  ... # other options
+  <application-jar> \ an hdfs:// path or a file:// path that is present on all nodes.
+  [application-arguments]
+
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master spark://207.184.161.138:7077 \
+  --deploy-mode cluster \
+  --supervise \
+  --executor-memory 20G \
+  --total-executor-cores 100 \
+  /path/to/examples.jar \
+  1000
+
+# Run on a YARN cluster
+export HADOOP_CONF_DIR=XXX
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master yarn \
+  --deploy-mode cluster \  # can be client for client mode
+  --executor-memory 20G \
+  --num-executors 50 \
+  /path/to/examples.jar \
+  1000
+
+# Run on a YARN cluster
+export HADOOP_CONF_DIR=XXX
+./bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master yarn-client \ (与yarn-cluster不同，这个提交app,当运行结束之后可以直接在客户端看到console结果，因为Driver直接运行在客户端中)
+  --num-executors 3 \	
+  --executor-memory 2G \
+  --executor-cores 1 \
+  lib/spark-example*.jar \
+  10
+
+例子：
+cd $SPARK_HOME ./bin/spark-submit \
+--class com.crazyjvm.streaming.HdfsWordCount \
+--master spark://server1:8888 \
+--executor-memory 10G \
+--total-executor-cores 20 \
+/data/program/streaming/spark-streaming-hdfs.jar hdfs://server1:9000/data/ 10
+
+
+object SparkWordCount {
+  def main(args: Array[String]) {
+    // create Spark context with Spark configuration
+    val sc = new SparkContext(new SparkConf().setAppName("Spark Count"))
+
+    // get threshold
+    val threshold = args(1).toInt
+      val input =  sc.textFile(inputFile)
+
+      val words = input.flatMap(line => line.split(" "))
+      // Transform into word and count.
+      val counts = words.map(word => (word, 1)).reduceByKey{case (x, y) => x + y}
+
+    // filter out words with fewer than threshold occurrences
+    val filtered = wordCounts.filter(_._2 >= threshold)
+
+    // count characters
+    val charCounts = filtered.flatMap(_._1.toCharArray).map((_, 1)).reduceByKey(_ + _)
+
+    System.out.println(charCounts.collect().mkString(", "))
+  }
+}
+
+——————————————————JAVA———————————————
+JAVA pass by reference: best explanation:
+https://stackoverflow.com/questions/40480/is-java-pass-by-reference-or-pass-by-value/40523#40523
+
+There are 5 keywords used in java exception handling.
+
+try
+catch
+finally
+throw
+throws
+
+https://www.javatpoint.com/difference-between-final-finally-and-finalize
+Final is a keyword.	Finally is a block.	Finalize is a method.
+final method can't be overridden and final variable value can't be changed.
+Finally is used to place important code, it will be executed whether exception is handled or not.
+Finalize is used to perform clean up processing just before object is garbage collected.
+
+A thread is a lightweight sub process, a smallest unit of processing
+n java, garbage means unreferenced objects.
+
+Garbage Collection is process of reclaiming the runtime unused memory automatically. In other words, it is a way to destroy the unused objects.
+
+
+how spark working and how rdd working? rdd vs data frame?
+Resilient Distributed Datasets (RDDs) are a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
+
+Immutable
+​They read only abstraction and cannot be changed once created. However, one RDD can be transformed into another RDD using transformations like map, filter, join, cogroup, etc. Immutable nature of RDD Spark helps attain consistencies in computations.
+
+Partitioned (就是把rdd的data chunk small logical chunks of data to run parallelism-parallel + lism, can be specified when creating RDD)
+RDDs in Spark have collection of records that contain partitions. RDDs in Spark are divided into small logical chunks of data - known as partitions, when an action is executed, a task will be launched per partition. Partitions in RDDs are the basic units of parallelism. Apache Spark architecture is designed to automatically decide on the number of partitions that an RDD can be divided into. However, the number of partitions an RDD can be divided into can be specified when creating an RDD. Partitions of an RDD are distributed through all the nodes in a network.
+
+Fault Tolerance (discretize - disagree-tize, lineage - linear-ge)
+Spark RDDs log all transformation in a lineage graph so that whenever a partition is lost, lineage graph can be used to reply the transformation instead of having to replicate data across multiple nodes (like in Hadoop MapReduce).
+
+RDD vs DataFrame vs DataFrame
+RDD – RDD is a distributed collection of data elements spread across many machines in the cluster. RDDs are a set of Java or Scala objects representing data.
+DataFrame – A DataFrame is a distributed collection of data organized into named columns. It is conceptually equal to a table in a relational database.
+DataSet – It is an extension of DataFrame API that provides the functionality of – type-safe, object-oriented programming interface of the RDD API and performance benefits of the Catalyst query optimizer and off heap storage mechanism of a DataFrame API.
+
+Drawback of dataFrame : Lack of Type Safety. As a developer, i will not like using dataframe as it doesn't seem developer friendly. Referring attribute by String names means no compile time safety. Things can fail at runtime. Also APIs doesn't look programmatic and more of sql kind.
+Dataset is an extension to Dataframe API, 
+
+Text vs sequence file vs RCfile vs ORC file vs Parquet
+
+Text file—All data are stored as raw text using the Unicode standard.
+
+Sequence file—The data are stored as binary key/value pairs.
+
+RCFile—All data are stored in a column optimized format (instead of row optimized).
+
+ORC—An optimized row columnar format that can significantly improve Hive performance.
+
+Parquet—A columnar format that provides portability to other Hadoop tools including Hive, Drill, Impala, Crunch, and Pig
+
+3. What is the difference between an object and a class in scala?
+An object is a singleton instance of a class. It does not need to be instantiated by the developer.
+
+If an object has the same name that a class, the object is called a companion object 
+
+ What is a case class?
+A case class is syntactic sugar for a class that is immutable and decomposable through pattern matching (because they have an apply and unapply methods). Being decomposable means it is possible to extract its constructors parameters in the pattern matching.
+
+Case classes contain a companion object which holds the apply method. 
+
+
+how map reduce work? how to run commanline of map-reduce, how to run scala code, how to run submit spark-code, when to run reducer? how to write mapper and reducer?
+
+how rdd working? what’s lazy operation? what’s transformation? how you do transformation?(map) 
+spark transformations and actions examples?
+what’s difference with Hive and SQl
+why impala is much faster?
+what’s difference between spark1.6 vs spark2.2,
+给你一个图书馆，怎么做map reduce细节？代码是怎么写的
+
+spark-submit 1000个nodes 怎么分配 参数是什么？多少个core/memory/excutor/
+How to find external table path? describe formatted. 看见path
+
+how to deal with skewed data
+以后面试题目每周要重复复习一次
+row column database vs col database
+
+java.lang.Object 的final 里面有哪些method 是final的
+啥是tag interface
+dynamic binding vs static binding?
+
+static binding
+When type of the object is determined at compiled time(by the compiler), it is known as static binding.
+
+If there is any private, final or static method in a class, there is static binding.
+
+
+
+next>><<prev
+Static Binding and Dynamic Binding
+static binding and dynamic binding in java
+Connecting a method call to the method body is known as binding.
+
+There are two types of binding
+
+static binding (also known as early binding).
+dynamic binding (also known as late binding).
+Understanding Type
+Let's understand the type of instance.
+
+1) variables have a type
+Each variable has a type, it may be primitive and non-primitive.
+
+int data=30;  
+Here data variable is a type of int.
+
+2) References have a type
+class Dog{  
+ public static void main(String args[]){  
+  Dog d1;//Here d1 is a type of Dog  
+ }  
+}  
+3) Objects have a type
+An object is an instance of particular java class,but it is also an instance of its superclass.
+class Animal{}  
+  
+class Dog extends Animal{  
+ public static void main(String args[]){  
+  Dog d1=new Dog();  
+ }  
+}  
+Here d1 is an instance of Dog class, but it is also an instance of Animal.
+static binding
+When type of the object is determined at compiled time(by the compiler), it is known as static binding.
+
+If there is any private, final or static method in a class, there is static binding.
+
+Example of static binding
+class Dog{  
+ private void eat(){System.out.println("dog is eating...");}  
+  
+ public static void main(String args[]){  
+  Dog d1=new Dog();  
+  d1.eat();  
+ }  
+}  
+Dynamic binding
+When type of the object is determined at run-time, it is known as dynamic binding.
+
+In the above example object type cannot be determined by the compiler, because the instance of Dog is also an instance of Animal.So compiler doesn't know its type, only its base type.
+
+
+
+
+
+Tag Interface），Java中很多标记接口，比如Serializable, EventListener, Remote(java.rmi.Remote)等。
+
+package java.util;
+public interface EventListener
+{}
+2. 标记接口有什么特点？
+标记接口没有任何成员变量和方法，它就是空的。你肯定疑惑，既然是空的，其他类怎么去实现（implement）它？它用来做什么？
+实际上，其他类implement它是为了声明该类在某个特定集合中的成员资格，比如当一个类实现（implement）了Serializable接口，它的目的是声明其是Serializable中的一个成员，当JVM虚拟机看到该类是Serializable的，那么它在处理序列化／反序列化时会做一些特殊的处理。
+
+标记接口对JVM是很有意义，你可以创建自己的标记接口来分离或分类代码，从而提高代码的可阅读行。
+
+
+————————————————————————
+JAX-RS interfaces/annotation; jersey +RESTEasy
+ Spring
+jax-rs:/rest annotations
+@Path(“/order”) @GET @POST @PUT @DELETE Http methods
+@Produces(“text/xml”)@Consumers(“application/xml”)
+@PathParam, @QueryParam…
+@Context HttpServletResponse -servlet api..
+@Context Request; (@Context HttpHeaders headers)
+
+———————————————————Microservices———————————————————
+Apache Camel + Rest Webservice using JAX-RS
+jax-rs  is a API that provides support in creating web services according to the REST architectural pattern.
+jax-rs we can configure the server to expose a REST service which return s an output by directly calling the specified resource class.
+
+make some changes in jax-rs: make specific which class file should be point to-> maven build -> run it in the postman
+
+Postman
+SOAP VS RESTful
+Just like SOAP (Simple Object Access Protocol), which is used to develop web services by XML method, RESTful web services use web protocol i.e. HTTP protocol method. T
+
+Q #2) Name the protocol which is used by RESTful web services.
+RESTful web services use a famous web protocol i.e. HTTP protocol.
+
+Q #6) What are the core components of HTTP request and HTTP response?
+
+The core components that come under HTTP Request are:
+Verb: Includes methods like GET, PUT, POST, etc.
+
+Q #18) What is the difference between PUT method and POST method?
+The major difference between the PUT and POST method is that the result generated with PUT method is always same no matter how many times the operation is performed. On the other hand, the result generated by POST operation is always different every time.
+
+
+
+How to parse JSON?
+JAX-RS has a @Consumes annotation to specify the MIME media types of representations a resource can consume that were sent by the client.
+
+
+16) What is Payload?
+The request data which is present in the body part of every HTTP message is referred as ‘Payload’.  In Restful web service, the payload can only be passed to the recipient through POST method.
+
+Some of the implementations of JAX-RS are:
+Jersey
+
+
+If one has to start a new spring project we have to add build path or add maven dependencies, configure application server, add spring configuration . So a lot of effort is required to start a new spring project as we have to currently do everything from scratch. Spring Boot is the solution to this problem. 
+
+What are EIPs in Apache Camel?
+A:	EIPs stand for Enterprise Integration Pattern. 
+CXF Component. When using CXF as a consumer, the CXF Bean Component allows you to factor out how message payloads are received from their processing as a RESTful
+
+REST is an architectural style which is based on web-standards and the HTTP protocol. 
+
+1.2. HTTP methods
+The PUT, GET, POST and DELETE methods are typical used in REST based architectures. 
+
+how to use curl?
+
+Q: Have you used Apache Camel with Spring?
+A: Yes. Have integrated Apache Camel with Spring. It helps in utilizing features like Spring Dependency injection, Datasource and Transaction management. 
+
+Q: Have you exposed a REST webservice endpoint using Apache Camel?
+A: Yes. Using Apache CXF exposed a REST Endpoint. This can be done using either JAX-RS 
+
+Q: How did you execute JUnit test cases for Apache camel?
+A: Using CamelSpringTestSupport - Apache Camel Unit Testing
+
+RESTful web services are built to work best on the Web. Representational State Transfer (REST) is an architectural style that specifies constraints, such as the uniform interface, 
+
+The most important disadvantage of Microservices is that they have all the associated complexities of distributed systems
+
+
+kafka cassandra security auth2.0 (非常重要security) (http response -caching part?)
+micro service service-registration, mongoldb why it is better? Currentcy - excutorservice for - 
+
+
+Question1. What Is Zookeper?
+Answer :
+
+ZooKeeper is a distributed co-ordination service to manage large set of hosts. 
+Question4. What Is Apache Zookeeper Meant For?
+Answer :
+
+Apache ZooKeeper itself is a distributed application providing services for writing a distributed application.to coordinate between themselves and maintain shared data with robust synchronization techniques.  
+Question3. What Are The Challenges Of Distributed Applications?
+Answer :
+
+Race condition: Two or more machines trying to perform a particular task, which actually needs to be done only by a single machine at any given time. For example, shared resources should only be modified by a single machine at any given time.
+
+Deadlock:Two or more operations waiting for each other to complete indefinitely.
+
+Inconsistency:Partial failure of data.
+
+
+
+———————————————Hive join -skew 真实案例跑了5个小时———————————————
+set mapred.reduce.tasks = 30;
+insert overwrite directory 'xxx'
+select
+cus.idA,cus.name,addr.bb from tableA as cus
+join tableB as addr
+on cus.idA = addr.idB
+ 
+很简单的一个hql语句，优化的空间也不是很大（例子中的addr数据量比cus小，应该讲addr放在前面驱动join）。tableA的量级为亿级，tableB的量级为几百万级别。
+
+首先为了确认到底是1. 集群本身的问题，还是2. 代码的问题，先找了另外两个表，都是亿级数据。这两个表不存在数据倾斜的情况，join一把试了试，两分钟之内结果就出来了。万幸，说明这会集群已经没有问题了，还是查查数据跟代码吧。
+
+上面的两个表是根据id关联的，那如果倾斜的话，肯定就是id倾斜了哇。
+
+set mapred.reduce.tasks = 5;
+select idA,count(*) as num
+from tableA
+group by idA
+distribute by idA
+sort by num desc limit 10
+
+192928  5828529
+2000000000496592833 2406289
+18000   1706031
+4000288 1386324
+2000000003624295444 1201178
+2000000001720892923 1029475
+2000000002292880478 991299
+2000000000736661289 881954
+2000000000740899183 873487
+2000000000575115116 803250
+
+对于有上亿数据的一个表来说，这数据也算不上倾斜多厉害嘛。最多的一个key也就五百多万不到六百万。好吧，先不管了，再查一把另外一个表
+set mapred.reduce.tasks = 5;
+select idB,count(*) as num
+from tableB
+group by idB
+distribute by idB
+sort by num desc limit 10
+
+结果也很快出来
+
+192928  383412
+18000   60318
+617279581   23028
+51010262    4643
+4000286 3528
+2000000000575115116 3218
+1366173280  3012
+4212339 2972
+2000000002025620390 2704
+2000000001312577574 2622
+
+这数据倾斜，也不是特别严重嘛。
+
+不过再把这两个结果一对比，尼玛恍然大悟。两个表里最多的一个key都是192928（同样的key），一个出现了将近600万次，一个出现了将近40万次。这两个表再一join，尼玛这一个key就是600万*40万的计算量。最要命的是，这计算量都分配给了一个节点。我数学不太好，600万*40万是多少，跪求数学好的同学帮忙计算一下。不过根据经验来看的话，别说5个小时，再添个0也未必能算得完。。
+
+如何解决
+既然找到了数据倾斜的位置，那解决起来也就好办了。因为本博主的真正需求并不是真正要算两个表的笛卡尔积（估计实际中也极少有真正的需求算600万*40万数据的笛卡尔积。如果有，那画面太美我不敢看)，所以最easy的解决方案，就是将这些key给过滤掉完事：
+set mapred.reduce.tasks = 30;
+insert overwrite directory 'xxx'
+select
+cus.idA,cus.name,addr.bb from tableA as cus
+join tableB as addr
+on cus.idA = addr.idB
+where cus.idA not in (192928,2000000000496592833,18000,4000288,2000000003624295444,2000000001720892923,2000000002292880478,2000000000736661289,2000000000740899183,2000000000575115116,617279581,51010262,4000286,1366173280,2000000002025620390,2000000001312577574)
+——————————————————————————————————
+spark - 真实案例
+val counts = file.flatMap(line => line.split(" ")).map(p => (p,1)).reduceByKey(_+_).sortByKey(true,1)
+counts.saveAsTextFile("Peter_SortedOutput6")
+
+remove punctuation, by replace "[^A-Za-z0-9\s]+" with "", or not include numbers "[^A-Za-z\s]+"
+trim all spaces
+lower all words
+we can add extra step like
+
+remove stop words
+import org.apache.spark.ml.feature.StopWordsRemover
+import org.apache.spark.sql.functions.split
+
+// val reg = raw"[^A-Za-z0-9\s]+" // with numbers
+
+val reg = raw"[^A-Za-z\s]+" // no numbers
+val lines = sc.textFile("peter.txt").
+    map(_.replaceAll(reg, "").trim.toLowerCase).toDF("line")
+val words = lines.select(split($"line", " ").alias("words"))
+
+val remover = new StopWordsRemover()
+      .setInputCol("words")
+      .setOutputCol("filtered")
+
+val noStopWords = remover.transform(words)
+
+val counts = noStopWords.select(explode($"filtered")).map(word =>(word, 1))
+    .reduceByKey(_+_)
+
+// from word -> num to num -> word
+val mostCommon = counts.map(p => (p._2, p._1)).sortByKey(false, 1)
+
+mostCommon.take(5)
+
+What happens when non-expected missing values appear in your data?- SPARK-
+This was the most painfull lesson for me. I read a Dataset from a csv, where some values were missing, but I did not know about them, so in the case class definition I did not use Option. Some data transformation steps were successful, I could even display the Dataset. But at a later point for the umpteenth data transformation function I got NullPointerException 
+
+As you can see table is no error, we can see the Dataset and even the null values in it. Filter this Dataset by a field without missing values.
+
+Filtering Dataset by converting missing value(null) to empty string: “”.
+
+The reason behind this failure is that the type of the weight column should be Integer as defined in the case class. The null value is not an Integer so we get the exception.
+
+In summary, using Options in case class definitions is a safer way to handle missing values.
+3. Filtering rows
+4. Renaming columns:sw_ds.withColumnRenamed("name", "Name")
+5. Adding new columns: 比如说count -> sw_ds.withColumn("count", lit(1))
+6. User defined function,比如组合成人名，或者地址，
+Finally if using expressions originally not defined for columns but for primitive types like Integer or String, then we have to create user defined functions aka UDFs.
+7. GroupBy
+8. Appending
+———————————————https://www.balabit.com/blog/spark-scala-dataset-tutorial------------------
+
+
+kafka真实案例 comsumer need commit offset
+serialized key-value with topic -> producerRecord (include topic, key, value, timestamp, partition)
+offset async commit()API - no traffic -> while loop read ConsumerRecord
+
+flume 真实案例一个，，加上kafka-多线程
+
+barcklays:
+java + hadoop cloudera-/spark/haddop 没决定  big/data/billing paymeny complaint / transaction spark/streaming /offline-hive     activemq-kafka-spark log-flume   events(records)-kafka-spark (shout:avro parquet   output:)  offset-kafka 问题 kafka simulator 测试 （测试user case, rest+kafka）rest:springboot - @autowire  会问的很偏 spring bean post   component 
+
+oracledb - sqoop; cassandra/momdb/ 
+
+cassandra vs mongodb?
+
+If you're looking at a single server, MongoDB is probably a better fit. For those more concerned about scaling, Cassandra's no-single-point-of-failure architecture will be easier to set up and more reliable. (MongoDB's global write lock tends to become more painful, too.) Cassandra also gives a lot more control over how your replication works, including support for multiple data centers.
+
+if you're presently using JSON blobs, MongoDB is an insanely good match for your use case, given that it uses BSON to store the data. 
+
+
+data-cleansing  date-format-transformation: 2017-11-20 00:39:26 => 20171120 (parse time)
+flatmap(_.split(“\t”))就可以拿到各个line， 然后split(“ “).
+if (url.startsWith(“/www”)) the category = url.split(“/”)(2).toInt
+
+同时model catalog里面也写用户search功能（包括wildcard）
+比如各种select, leftjoin
+用的最多的还是string parse,各种filter. map (s.substring).reduceByKey
+ListBuffer…
+
+创建新case class clickLog(ip, time, category:Int)
+
+foreachRDD (rdd => {foreachPartition (parittions => ……) }怎么用？
+//每个类别的点击量
+
+scala 打包用maven，
+<p>1.使用maven打包时要再加一个maven的插件，见下面，maven-assembly-plugin 插件，意思程序中使用到的其他依赖jar包一起打进去。</p> 然后把Spark相关包的scope设置成provided。
+首先要替换building文件（pom.xml文件，然后把jar文件上传到linux环境下，
+然后Xcall.sh jps 开启hadoop, 因为用的hbase,要用hdfs,同时flume, kafka也要开启
+spark里面master， worker都是好用的，最后才是spark-submit —master path, —class xxx.class path.jar
+然后可以写到sparkapp.sh里面，下次
+$ chmod 777 submitAppTest.sh
+$ ./submitAppTest.sh
+
+1.    Difference between Flume and Kafka? Why use both in your project?
+2.    What are executors in Spark?
+Executor is a distributed agent that is responsible for executing tasks.
+
+Driver和Executor
+Spark在执行每个Application的过程中会启动Driver和Executor两种JVM进程：
+
+Driver进程为主控进程，负责执行用户Application中的main方法，提交Job，并将Job转化为Task，在各个Executor进程间协调Task的调度。
+运行在Worker上的Executor进程负责执行Task，并将结果返回给Driver，同时为需要缓存的RDD提供存储功能。
+
+How to calculate core/executors/memeory
+**Cluster Config:**
+10 Nodes
+16 cores per Node
+64GB RAM per Node
+Tiny executors: One executor per core
+用户的任务申请了100 个executors，每个executor 的cores 为6，那么最多会有600 个任务同时在运行，刚开始是600 个任务在运行
+
+wide dependencies such as groupByKey and reduceByKey.
+Narrow dependencies(no shuffle, fast - map, union)
+
+
+3.    What is different in Scala compared to Java - What is singleton in Scala – Object or Class?
+4.    What are Traits in Scala?
+5.    How to create UDF in Hive?
+1. Create Java class for User Defined Function which extends ora.apache.hadoop.hive.sq.exec.UDF amd implement evaluate() methods and put your desired logic methods
+2. Package your Java class into JAR file (I am using maven)
+3. Go to Hive CLI – hive> add jar path/hiveUDF-snapshot.jar, 
+4. verify your JARs in Hive CLI classpath   hive> list jars; 
+5. CREATE TEMPORARY FUNCTION in hive which points to your Java class
+hive> CREATE TEMPORARY FUNCTION STRIP AS 'org.hardik.letsdobigdata.Strip';
+hive> select strip('hadoop','ha') from dummy;
+6. Use it in Hive SQL
+
+6.    Difference between Avro and Parquet file formats?
+Text: human-readable, bulky
+sequence file: row based. provides a persistent data structure for binary key-value pairs
+(sequencefiledata: key-value-key-value-key-value-key-value)
+Avro: row based, widely used as a serialization platform, support block compression
+(Avro is designed for schema evolution purpose)
+Parquet: column-oriented binary file format, query a few columns on a wide table
+
+what’s schema evolution?
+adding new columns, drop one columns, alter columns (rename)
+
+7.    Some question on Oozie main components
+
+Question1. What Is Apache Oozie?
+Apache Oozie is a Java Web application used to schedule Apache Hadoop jobs.It is integrated with the Hadoop stack and supports Hadoop jobs for Apache MapReduce, Apache Pig, Apache Hive, and Apache Sqoop. 
+
+Mention Some Features Of Oozie?
+Oozie has client API and command line interface which can be used to launch, control and monitor job from Java application.
+Using its Web Service APIs one can control jobs from anywhere.
+Oozie has provision to execute jobs which are scheduled to run periodically.
+Oozie has provision to send email notifications upon completion of jobs.
+
+
+Question10. What Is Decision Node In Oozie?
+Decision Nodes are switch statements that will run different jobs based on the outcomes of an expression.
+
+hive vs pig?
+Hive is best for structured Data & PIG is best for semi structured data
+Hive is used for reporting & PIG for programming
+Hive supports partitions & PIG does not
+
+hive vs sql?
+WHEN TO USE HIVE
+If you have large (think terabytes/petabytes) datasets to query: Hive is designed specifically for analytics on large datasets and works well for a range of complex queries. Hive is the most approachable way to quickly (relatively) query and inspect datasets already stored in Hadoop.
+If extensibility is important: Hive has a range of user function APIs that can be used to build custom behavior 
+
+If your datasets are relatively small (gigabytes): Hive works very well in large datasets, but MySQL performs much better with smaller datasets and can be optimized in a range of ways.
+If you need to update and modify a large number of records frequently: MySQL does this kind of activity all day long. Hive, on the other hand, doesn’t really do this well (or at all, depending). And if you need an interactive experience, use MySQL.
+
+sql vs NoSQL:
+sql: relational; NoSql: non-relational
+data: structured; nosql: un-structured stored in json file
+schema: sql is static; nosql is dynamic
+language: structured Query Language; NoSQL: Un-structured Query language
+
+
+row based vs column based db?
+row based: data stored in rows.Rread the record row by row.
+how about 1billion rows:
+data stored in columns (by fields)
+
+Normalization Versus Denormalization
+Normalization is the process of reducing redundancy of the data. It is very good for reducing the storage requirements of data.
+
+Denormalization:
+
+Denormalization is the process of attempting to optimise the read performance of a database by adding redundant data or by grouping data. 
+
+Spark vs spark streaming?
+Key difference is that Spark uses RDD abstraction, Spark streaming instead uses the concept of DStream which is basically RDD separated with a batch interval.
+
+what is Nosql?
+NoSQL is an approach to databases that represents a shift away from traditional relational database management systems (RDBMS). 
+Relational databases rely on tables, columns, rows, or schemas to organize and retrieve data. In contrast, NoSQL databases do not rely on these structures and use more flexible data models. 
+(type of nosql databases: Key-value data stores; Documents stores, wide-column stores; graph stores)
+
+Cassandra, h base vs hive vs mongodb
+monogodb: document store; support BSON
+cassandra: write log/events much faster; mongoldb: read document is much faster.
+
+Hivesql?
+HiveQL is a query language for Hive to process and analyze structured data in a Metastore.
+ SELECT upper(name), sales_cost FROM products;
+
+Map reduce , mapper reducer class?
+ public void map(Object key, Text value, Context context) throws
+    IOException, InterruptedException {
+      // Split the input text value to words
+      StringTokenizer itr = new StringTokenizer(value.toString());
+      // Iterate all the words in the input text value
+      while (itr.hasMoreTokens()) {
+        word.set(itr.nextToken());
+        context.write(word, new IntWritable(1));
+      }
+}
+
+
+public void reduce(Text key, Iterable<IntWritable>values, Context
+    context) throws IOException, InterruptedException
+    {
+      int sum = 0;
+      // Sum all the occurrences of the word (key)
+      for (IntWritableval : values) {
+        sum += val.get();
+      }
+      result.set(sum);
+      context.write(key, result);
+    }
+
+why use random forest or k-cluster?
+
+How many daemons in Hadoop？
+Hadoop is comprised of five separate daemons. Each of these daemon run in its own JVM. Following 3 Daemons run on Master nodes NameNode - This daemon stores and maintains the metadata for HDFS. Secondary NameNode - Performs housekeeping functions for the NameNode. JobTracker - Manages MapReduce jobs, distributes individual tasks to machines running the Task Tracker. Following 2 Daemons run on each Slave nodes DataNode – Stores actual HDFS data blocks. TaskTracker - Responsible for instantiating and monitoring individual Map and Reduce tasks.
+
+what is monad, trait, map function in scala？
+A monad is an object that stores a function called a “doer”. Its purpose is to define how to chain operations together. When the doer is called, it applies the pipeline of operations defined within it to the data passed in. The doer in a monad is built step by step.
+
+difference between hash table and hash map?
+Hashtable does not allow null keys or values.  But Hashtable is synchronized.
+HashMap allows one null key and any number of null values, and HashMap is not synchronized. This makes HashMap better for non-threaded applications, as unsynchronized Objects typically perform better than synchronized ones.
+
+what is Dstream in Spark?
+MR work flow
+difference between hive and pig (pig-script language, hive-sql-like), both map-reduce;
+libraries in Spark （MLlib spark-scala ）
+
+Thread life cycle in Java?
+Life cycle of a Thread (Thread States)
+
+New
+Runnable
+Running
+Non-Runnable (Blocked)
+Terminated
+
+A thread can be in one of the five states. According to sun, there is only 4 states in thread life cycle in java new, runnable, non-runnable and terminated. There is no running state.
+
+But for better understanding the threads, we are explaining it in the 5 states.
+
+The life cycle of the thread in java is controlled by JVM. The java thread states are as follows:
+New
+Runnable
+(Running)
+Non-Runnable (Blocked)
+Terminated
+
+2) Runnable
+The thread is in runnable state after invocation of start() method, but the thread scheduler has not selected it to be the running thread.
+3) Non-Runnable (Blocked)
+This is the state when the thread is still alive, but is currently not eligible to run.
+4) Terminated
+A thread is in terminated or dead state when its run() method exits.
+
+drop column or update -> insert overwrite
+(new temp table-without column, insert overwrite to temp table)
+
+2. How to use CXF framework to implement SOAP web service? 
+如何提高性能cache(Get), Join, using “JOIN FETCH” or left join so no need to scan both tables 
+6. Tell me something about hibernate, how to use it.
+-how to integrate with spring, configuration, how to use. Performance tuning, what method used for PT, 1+N problem.
+	首先说怎么和spring整合， 配置。 再说怎么用 一般是用hibernateTemplate 类。 接着说有什么问题 performance tuning，
+采用什么方法去性能优化， 举出啦著名的1+N问题（不知道的可以去看hibernate官方文档）
+
+Suppose we have a class Manufacturer with a N-to-1 relationship with Contact.
+
+We solve this problem by making sure that the initial query fetches all the data needed to load the objects we need in their appropriately initialized state.
+
+
+7. spring parameter initialization and callback function？
+
+What happens in the background when a Spring Boot Application is “Run as Java Application”?
+If you are using Eclipse IDE, Eclipse maven plugin ensures that as soon as you add a dependency or make a change to the class file, it is compiled and ready in the target folder! And after that its just like any other Java application.
+
+When you launch the java application, then the spring boot auto configuration magic kicks in.
+
+It launches up tomcat when it sees that you are developing a web application
+
+———————————————————SPRING BOOT—————————————————————————
+springboot terminology?
+@RestController
+@RestController. This is known as a stereotype annotation. It provides hints for people reading the code and for Spring that the class plays a specific role. In this case, our class is a web @Controller, so Spring considers it when handling incoming web requests.
+@EnableAutoConfiguration
+The @RequestMapping annotation provides “routing” information. It tells Spring that any HTTP request with the / path should be mapped to the home method. The @RestController annotation tells Spring to render the resulting string directly back to the caller.
+
+Springboot
+ jpa vs hibernate? how to choose?
+1.JPA is a specification where as Hibernate is one of the implementation
+2. Sometimes application are directly using JPA. How ti work without any implementation?
+answer: The application server provide implementations of JPA as it is a J2EE standard.
+jpa: Java persistence API : (@Entity, @Table, @Column(name=“”)and @Id, 
+@GenerateValue(strategy=GenerationType.AUTO)
+and in pomx.xml <class>xxxx<class> point to)
+topicRepository extends CrudRepository,里面得到get/update/delete/
+
+How hibernate connect to database?
+hibernate.cfg.xml
+
+<hibernate-configuration>
+  <session-factory>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://mysql{node_id}.{your_env_name}.{hoster_domain}:3306/jelasticDb</property>
+    <property name="hibernate.connection.username">jelastic</property>
+    <property name="hibernate.connection.password">jelastic</property>
+    <property name="hibernate.current_session_context_class">thread</property>
+    <mapping resource="com/Testdata.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>
+
+
+Q : Where is the database connection info specified? How does it know to automatically connect to H2?
+Thats Spring Boot Autoconfiguration magic.
+
+Q : How do we connect to a external database like MSSQL or oracle?
+Let’s consider one of those as an example - MySQL
+
+Step 1 - Add dependency for mqsql connector to pom.xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+</dependency>
+step 2: 
+Configure application.properties: like url, username, password
+
+———————————————MicroService—————————————————
+Load balancing aims to optimize resource use, maximize throughput, minimize response time, and avoid overload of any single resource. 
+
+Q: How to achieve server side load balancing using Spring Cloud?
+A: Server side load balancingcan be achieved using Netflix Zuul. 
+
+Q: How will you monitor multiple microservices for various indicators like health?
+A: The major drawback or difficulty about using actuator enpoints is that we have to individually hit the enpoints for applications to know their status or health. Imagine microservices involving 50 applications, the admin will have to hit the actuator endpoints of all 50 applications.Only way to monitor service is healthy
+
+in microservices, what is service discovery vs service registry?
+service discovery is not a module with specific role but the steps involved in connecting from serviceA to serviceB end-to-end.
+
+The service registry is containing the network locations of service instances in a database.
+
+Caching your REST API 
+The goal of caching is never having to generate the same response twice.
+The benefit of doing this is that we gain speed and reduce server load. 
+
+Why caching in Rest service?
+The good news is that it’s only GET methods where you need to think about caching as it doesn’t really make much sense to cache POST, PUT or DELETE responses.
+
+What’s REST?
+REpresentational State Transfer (REST) is an architectural style that defines a set of 
+constraints and properties based on HTTP.
+
+What happened when click a URL?
+1. browser checks cache; if requested object is in cache and is fresh, skip to #8
+2. browser asks OS for server's IP address
+3. OS makes a DNS lookup and replies the IP address to the browser
+4. browser opens a TCP connection to server (this step is much more complex with HTTPS)
+5. browser sends the HTTP request through TCP connection
+6. browser receives HTTP response and may close the TCP connection, or reuse it for another request
+7. browser checks if the response is a redirect or a conditional response (3xx result status codes), authorization request (401), error (4xx and 5xx), etc.; these are handled differently from normal responses (2xx)
+8.if cacheable, response is stored in cache
+9. browser decodes response (e.g. if it's gzipped)
+10. browser determines what to do with response (e.g. is it a HTML page, is it an image, is it a sound clip?)
+browser renders response, or offers a download dialog for unrecognized types
+
+
+我们知道Java中你可以实现多个接口，那么Scala中，你也可以继承多个trait
+trait与abstract class不同：
+A class can only extend one superclass, and thus, only one abstract class.
+trait Player {
+  def play
+  def close
+  def pause
+  def stop
+  def resume
+}
+trait examples:
+class CollegeStudent extends Student with Worker with Underpaid with Young
+
+why use parquet vs avro?
+why mongoldb failure torlance
+
+
+
+How do run spark test?
+
+How to hand multiple Hive jar? 
+build together, but one jar is for encryption, another jar is for decryption 
+
+what’s consumer group?
+
+****************************************************************************************
+一个java里面有好几个class的原因：
+链接：https://www.nowcoder.com/questionTerminal/f61560a794f543a5a1f7c4740d52c481?orderByHotValue=1&page=1&onlyReference=false
+来源：牛客网
+
+
+一个.java文件中定义多个类：
+注意一下几点：
+(1) public权限类只能有一个（也可以一个都没有，但最多只有一个）；
+(2)这个.java文件名只能是public 权限的类的类名；
+(3)倘若这个文件中没有public 类，则它的.java文件的名字是随便的一个类名；
+(4)当用javac命令生成编译这个.java 文件的时候，则会针对每一个类生成一个.class文件；
+（5）注解和枚举呢也是。java
+3.一个文件多个类和一个文件一个类的效果是一样的，同样不能访问其它类的private方法。
+同一个文件里面的类都是可以互相找到的，没有定义的先后的说法，Java中类的位置是无所谓的
+package hellocucumber;
+
+public class TestBreak {
+	public static void main(String[] args) {
+		int stop = 4;
+		for (int i = 0; i < 10; i++) {
+			if (i == stop)
+				break;
+			System.out.println(i);
+		}
+		TestBreak breaktest = new TestBreak();
+//注意多class的引用
+		TestContinue test1 = breaktest.new TestContinue();
+	}
+	
+	class TestContinue {
+		int temp = 4;
+		{  //这个是个block,如果没有{}，则会报错，提示用{}，或者写成方法
+			for(int j = 0;j<5;j++) {
+				if (j == temp)
+					continue;
+				System.out.println( "j: " + j);
+			}
+		}
+	}
+}
+output:
+0
+1
+2
+3
+j: 0
+j: 1
+j: 2
+j: 3
+
+文件类：一个原代码文件中，在一个公共类外的非公共类 
+public class A{ 
+   public static void main(String[] args){ 
+       new B(); 
+   } 
+} 
+class B{ 
+   static{System.out.println("我是文件类");} 
+} 
+
+方法里可以定义类：本地(内部)类 
+public class A{ 
+   public static void main(String[] args){ 
+       new B(); 
+       class B{ 
+            public B(){ 
+              System.out.println("我是本地类"); 
+            } 
+       } 
+   } 
+} 
+
+类里可以定义类：内部类 
+public class A{ 
+   public static void main(String[] args){ 
+       new B(); 
+   } 
+   class B{ 
+     public B(){ 
+       System.out.println("我是内部类"); 
+     } 
+   } 
+} 
+匿名类：类的申明和创建在一个语句中完成 
+public class A{ 
+   public static void main(String[] args){ 
+       new Object(){ 
+          static{System.out.println("我是匿名类");} 
+       }; 
+   } 
+}
+
+for(int j=0;j<10;j++) { 
+if(j == temp) 
+continue; 
+System.out.println(j); 
+} 
+
+放在方法中或在块中执行，块的定义{} 
+
+/*源文件javac出多个class文件出来!是怎么回事?
+1.   你在一个文件里定义了几个类的时候，会出现这种情况，比如   
+  public   class   A   {}   
+  class   B   {}   
+  class   C   {}   
+  这样每个   class   会是一个   .class     文件   
+    
+  2.   你定义了内部类的时候会出现这种情况，如   
+  public   class   A   {   
+          class   B   {   
+          }   
+  }   
+  这会产生两个   class   文件，一个   A.class,一个   A$B.class   
+    
+  3.   使用了匿名类的时候出出现这种情况，如   
+  public   class   A   {   
+          void   xxx()   {   
+                    button.addActionLisener(new   ActionListener()   {...});   
+          }   
+  }   
+  这也会产生多个   class，一个   A.class，一个   A$1.class   
+  }
+
+ */
+
+****************************************************************************************
+default spark UI port:spark://master:7077
